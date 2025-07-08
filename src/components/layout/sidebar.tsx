@@ -12,6 +12,7 @@ import {
   Cog,
   Briefcase,
   ChartNoAxesColumnIncreasing,
+  BarChart3,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -48,6 +49,11 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/')}>
               <Link href="/"><Home /><span>แดชบอร์ด</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/kpi-dashboard')}>
+              <Link href="/kpi-dashboard"><BarChart3 /><span>KPI Dashboard</span></Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

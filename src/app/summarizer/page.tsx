@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -114,7 +115,14 @@ const SummarizerPage = () => {
                 <Label htmlFor="document-upload">อัปโหลดไฟล์ภาพ</Label>
                 {imagePreview ? (
                      <div className="relative group">
-                        <img src={imagePreview} alt="Preview" className="w-full h-48 object-contain rounded-md border p-2 bg-secondary/30" />
+                        <Image 
+                            src={imagePreview} 
+                            alt="Document Preview" 
+                            width={400}
+                            height={192}
+                            className="w-full h-48 object-contain rounded-md border p-2 bg-secondary/30"
+                            priority
+                        />
                         <Button
                             variant="destructive"
                             size="icon"

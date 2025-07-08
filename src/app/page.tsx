@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  Activity,
   ArrowUp,
   Briefcase,
   CheckCircle,
@@ -13,11 +12,11 @@ import {
   Users,
   Bell,
 } from 'lucide-react';
-import { Area, AreaChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell, RadialBar, RadialBarChart } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Area, AreaChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import React from 'react';
@@ -62,7 +61,11 @@ const todoListData = [
 ]
 
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label }: {
+    active?: boolean;
+    payload?: Array<{ value: number }>;
+    label?: string;
+}) => {
     if (active && payload && payload.length) {
         return (
             <div className="p-2 bg-slate-700/80 backdrop-blur-sm border border-slate-600 rounded-lg shadow-lg">
@@ -73,7 +76,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return null;
 };
 
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }: any) => {
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: {
+    cx: number;
+    cy: number;
+    midAngle: number;
+    innerRadius: number;
+    outerRadius: number;
+    percent: number;
+}) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -207,8 +217,8 @@ export default function DashboardPage() {
                                         innerRadius={70}
                                         dataKey="value"
                                     >
-                                        {projectStatusData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.fill} stroke={entry.fill} />
+                                        {projectStatusData.map((entry, entryIndex) => (
+                                            <Cell key={`cell-${entryIndex}`} fill={entry.fill} stroke={entry.fill} />
                                         ))}
                                     </Pie>
                                     <Tooltip content={<CustomTooltip />} />

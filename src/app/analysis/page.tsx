@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useCallback } from 'react';
+import Image from 'next/image';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -109,7 +110,14 @@ export default function AnalysisPage() {
                         <CardContent>
                             {torPreview ? (
                                 <div className="relative group">
-                                    <img src={torPreview} alt="Preview" className="w-full h-64 object-contain rounded-md border p-2 bg-secondary/30" data-ai-hint="document paper" />
+                                    <Image 
+                                        src={torPreview} 
+                                        alt="TOR Document Preview" 
+                                        width={400}
+                                        height={256}
+                                        className="w-full h-64 object-contain rounded-md border p-2 bg-secondary/30" 
+                                        priority
+                                    />
                                     <Button
                                         variant="destructive"
                                         size="icon"

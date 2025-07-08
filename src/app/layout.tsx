@@ -1,10 +1,12 @@
 
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from "@/components/theme-provider";
 import { belleza, alegreya } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/app-layout-client";
 import { Toaster } from "@/components/ui/toaster";
+import { PerformanceMonitor } from "@/components/performance-monitor";
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -12,7 +14,19 @@ export const metadata: Metadata = {
   description: "AI-Powered Project Financial Management",
   icons: {
     icon: "/favicon.ico",
-  }
+  },
+  manifest: "/manifest.json"
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#020817" }
+  ]
 };
 
 export default function RootLayout({
@@ -33,6 +47,13 @@ export default function RootLayout({
             {children}
           </AppLayout>
           <Toaster />
+          {process.env.NODE_ENV === 'development' && (
+            <>
+              {/* These components only load in development mode */}
+              <PerformanceMonitor />
+              <PWAInstallPrompt />
+            </>
+          )}
         </ThemeProvider>
       </body>
     </html>

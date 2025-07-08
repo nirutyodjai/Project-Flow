@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -23,7 +23,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Plus, Upload, Filter, Search, Star, Ellipsis } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { listContacts, type Contact } from '@/services/firestore';
+import { type Contact } from '@/services/firestore';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/page-header';
 
@@ -142,12 +142,12 @@ const ContactsTable = ({ contacts }: { contacts: (Contact & { activity: string, 
 
 export default function ContactsPage() {
     // For now, we use mock data. In a real application, you would fetch this data.
-    const [contacts, setContacts] = useState(mockData); 
+    const [contacts] = useState(mockData); 
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('all');
 
     const filteredContacts = useMemo(() => {
-        let currentFilter = tabFilters.find(f => f.value === activeTab)?.filter || (() => true);
+        const currentFilter = tabFilters.find(f => f.value === activeTab)?.filter || (() => true);
         
         const filteredByType = contacts.filter(currentFilter);
         

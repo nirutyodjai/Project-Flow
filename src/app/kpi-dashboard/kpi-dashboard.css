@@ -1,0 +1,53 @@
+.kpi-header h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.kpi-tabs {
+  margin-top: 1.5rem;
+}
+
+.kpi-progress-bar {
+  width: 100%;
+  background-color: hsl(var(--muted));
+  border-radius: 9999px;
+  height: 0.5rem;
+}
+
+.kpi-progress-value {
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+.kpi-progress-value-success {
+  background-color: hsl(var(--success));
+}
+
+.kpi-progress-value-warning {
+  background-color: hsl(var(--warning));
+}
+
+.kpi-progress-value-danger {
+  background-color: hsl(var(--destructive));
+}
+
+.task-checkbox {
+  border-radius: 0.25rem;
+  border-color: hsl(var(--muted-foreground));
+}
+
+.task-priority-high {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: rgb(185, 28, 28);
+}
+
+.task-priority-medium {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: rgb(180, 83, 9);
+}
+
+.task-priority-low {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: rgb(30, 64, 175);
+}

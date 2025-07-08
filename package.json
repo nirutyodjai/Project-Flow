@@ -9,7 +9,9 @@
     "build": "npx next build",
     "start": "npx next start",
     "lint": "npx next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",
@@ -61,7 +63,7 @@
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/react": "18.3.23",
     "@types/react-dom": "^18",
     "@types/react-dropzone": "^4.2.2",
     "@types/wav": "^1.0.4",
@@ -75,6 +77,6 @@
     "style-loader": "^4.0.0",
     "tailwindcss": "^3.4.1",
     "ts-jest": "^29.4.0",
-    "typescript": "^5"
+    "typescript": "5.8.3"
   }
 }

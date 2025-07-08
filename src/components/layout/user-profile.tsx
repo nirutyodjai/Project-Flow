@@ -15,6 +15,7 @@ import { ChevronDown, LogIn, User as UserIcon, Settings, LogOut } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { getFirebaseAuth } from '@/services/firebase';
+import { NotificationCenter } from '@/components/notification-center';
 import Image from 'next/image';
 
 export function UserProfile() {
@@ -35,7 +36,8 @@ export function UserProfile() {
 
   if (!user) {
     return (
-      <div className="p-2">
+      <div className="p-2 flex items-center gap-2">
+        <NotificationCenter />
         <Button asChild className="w-full justify-center">
           <Link href="/login">
             <LogIn className="mr-2 h-4 w-4" />
@@ -47,7 +49,9 @@ export function UserProfile() {
   }
 
   return (
-    <DropdownMenu>
+    <div className="flex items-center gap-2 p-2">
+      <NotificationCenter />
+      <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="p-2 flex items-center justify-between w-full hover:bg-sidebar-accent rounded-md">
           <div className="flex items-center gap-3 text-left">
@@ -94,5 +98,6 @@ export function UserProfile() {
         </form>
       </DropdownMenuContent>
     </DropdownMenu>
+    </div>
   );
 }

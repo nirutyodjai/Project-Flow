@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/page-header';
-import { Search, BrainCircuit, FileDown, Target, TrendingUp, Sparkles, Building2 } from 'lucide-react';
-import { findBiddableProjects, FindBiddableProjectsOutput } from '@/ai/flows/find-biddable-projects';
+import { Search, BrainCircuit, FileDown, Target, TrendingUp, Sparkles, Building2, Database } from 'lucide-react';
+import { findBiddableProjects } from '@/ai/flows/find-biddable-projects';
+import type { FindBiddableProjectsOutput } from '@/ai/flows/find-biddable-projects-shared';
 import Link from 'next/link';
 import './procurement.css';
 
@@ -71,6 +72,14 @@ export default function ProcurementPage() {
       <PageHeader
         title="ค้นหางานประมูลอัจฉริยะ"
         description="ให้ AI ค้นหาและวิเคราะห์โครงการที่น่าสนใจสำหรับคุณ"
+        extra={
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/procurement/seed">
+              <Database className="mr-2 h-4 w-4" />
+              เพิ่มข้อมูลตัวอย่าง
+            </Link>
+          </Button>
+        }
       />
       <div className="p-4 sm:p-6 lg:p-8 flex-1 flex flex-col overflow-y-auto custom-scrollbar">
         <div className="flex gap-2 mb-8">
@@ -98,7 +107,7 @@ export default function ProcurementPage() {
         
         {results && (
           <div className="procurement-results grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {results.projects.map((project, index) => (
+            {results.projects.map((project: any, index: number) => (
               <Card key={index} className="flex flex-col project-card-procurement">
                 <CardHeader>
                   <div className="flex justify-between items-start gap-2">
