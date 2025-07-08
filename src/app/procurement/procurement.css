@@ -1,0 +1,55 @@
+
+.procurement-results .project-card-procurement {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInProcurement 0.5s ease-out forwards;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    position: relative;
+    overflow: hidden;
+    background-color: hsl(var(--card));
+}
+
+.procurement-results .project-card-procurement:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    padding: 1px;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2), hsl(var(--card)));
+    -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+}
+
+.procurement-results .project-card-procurement:hover:before {
+    opacity: 1;
+}
+
+
+.procurement-results .project-card-procurement:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px -5px hsla(var(--primary) / 0.15), 0 5px 10px -6px hsla(var(--primary) / 0.1);
+}
+
+
+.procurement-results .project-card-procurement:nth-child(1) { animation-delay: 0.1s; }
+.procurement-results .project-card-procurement:nth-child(2) { animation-delay: 0.2s; }
+.procurement-results .project-card-procurement:nth-child(3) { animation-delay: 0.3s; }
+.procurement-results .project-card-procurement:nth-child(4) { animation-delay: 0.4s; }
+.procurement-results .project-card-procurement:nth-child(5) { animation-delay: 0.5s; }
+
+
+@keyframes fadeInProcurement {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

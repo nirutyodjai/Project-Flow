@@ -1,0 +1,4 @@
+
+// This file is no longer used.
+// DataConnect configuration has been removed to resolve build issues.
+// A Firestore service is used instead. See src/services/firestore.ts

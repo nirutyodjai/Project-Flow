@@ -1,0 +1,37 @@
+type Project {
+  id: String!
+  name: String!
+  organization: String
+  type: String
+  budget: String
+  address: String
+  contactPerson: String
+  phone: String
+  documentUrl: String
+}
+
+type Contact {
+  id: String!
+  type: String
+  name: String!
+  email: String
+  phone: String
+  address: String
+  contactPerson: String
+}
+
+type Query {
+  listProjects: [Project] @sql(
+    query: """
+      SELECT id, name, organization, type, budget, address, contact_person as "contactPerson", phone, document_url as "documentUrl"
+      FROM projects
+    """
+  )
+
+  listContacts: [Contact] @sql(
+    query: """
+      SELECT id, type, name, email, phone, address, contact_person as "contactPerson"
+      FROM contacts
+    """
+  )
+}

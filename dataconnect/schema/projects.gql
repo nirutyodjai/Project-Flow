@@ -1,0 +1,12 @@
+
+type Project @table(key: "projectId") {
+  projectId: String! @db(default: "uuid()")
+  name: String!
+  organization: String
+  type: String
+  budget: String
+  address: String
+  contactPerson: String
+  phone: String
+  documentUrl: String
+}

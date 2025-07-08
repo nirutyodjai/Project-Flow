@@ -1,0 +1,11 @@
+{
+  "files.associations": {
+    "*.css": ""
+  },
+  "IDX.aI.enableInlineCompletion": true,
+  
+  
+  "IDX.aI.enableCodebaseIndexing": true,
+  "editor.tabSize": 9,
+  "editor.wordWrap": "on"
+}

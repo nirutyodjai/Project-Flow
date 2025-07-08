@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 217 20% 18%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 11.2%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 207 100% 64%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 215 28% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 28% 17%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 177 55% 67%;
+    --accent-foreground: 217 20% 18%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 215 28% 27%;
+    --input: 215 28% 17%;
+    --ring: 207 100% 64%;
+    --radius: 0.5rem;
+    --chart-1: 202 83% 46%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 217 20% 18%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 207 100% 64%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 177 55% 67%;
+    --sidebar-accent-foreground: 217 20% 18%;
+    --sidebar-border: 217 20% 24%;
+    --sidebar-ring: 207 100% 64%;
+  }
+
+  .dark {
+    --background: 217 20% 18%;      /* From Blueprint */
+    --foreground: 210 40% 98%;
+    --card: 217 20% 22%;             /* Slightly Lighter */
+    --card-foreground: 210 40% 98%;
+    --popover: 217 20% 14%;          /* Slightly Darker */
+    --popover-foreground: 210 40% 98%;
+    --primary: 207 100% 64%;         /* From Blueprint */
+    --primary-foreground: 217 20% 18%;
+    --secondary: 217 20% 25%;        /* Lighter shade for secondary elements */
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 20% 25%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 177 55% 67%;           /* From Blueprint */
+    --accent-foreground: 217 20% 18%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 20% 30%;           /* Slightly lighter border */
+    --input: 217 20% 25%;
+    --ring: 207 100% 64%;
+    --radius: 0.5rem;
+    --chart-1: 207 100% 64%;
+    --chart-2: 177 55% 67%;
+    --chart-3: 45 93% 47%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --sidebar-background: 217 20% 14%; /* Darker sidebar */
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 207 100% 64%;
+    --sidebar-primary-foreground: 217 20% 18%;
+    --sidebar-accent: 177 55% 67%;
+    --sidebar-accent-foreground: 217 20% 18%;
+    --sidebar-border: 217 20% 22%;
+    --sidebar-ring: 207 100% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: -1;
+    background: radial-gradient(circle at top, hsl(var(--primary)/0.05), transparent 40%);
+    pointer-events: none;
+    transition: background 0.5s ease;
+  }
+  
+   h1,h2,h3,h4,h5,h6 {
+    @apply font-headline;
+  }
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary) / 0.7);
+}
+
+
+/* Animations */
+@keyframes pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+.pulse-animation {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.staggered-fade-in > * {
+  opacity: 0;
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.staggered-fade-in > :nth-child(1) { animation-delay: 0.1s; }
+.staggered-fade-in > :nth-child(2) { animation-delay: 0.15s; }
+.staggered-fade-in > :nth-child(3) { animation-delay: 0.2s; }
+.staggered-fade-in > :nth-child(4) { animation-delay: 0.25s; }
+.staggered-fade-in > :nth-child(5) { animation-delay: 0.3s; }
+.staggered-fade-in > :nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes highlight {
+  0% {
+    background-color: hsla(var(--primary) / 0.3);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.calculation-highlight {
+  animation: highlight 2s ease;
+}
+
+/* Page specific styles */
+.admin-table-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.star-rating .star-filled {
+    fill: hsl(var(--chart-3));
+    stroke: hsl(var(--chart-3));
+}
+
+.activity-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+.activity-recent {
+    background-color: hsl(var(--chart-2));
+}
+.activity-medium {
+    background-color: hsl(var(--chart-3));
+}
+.activity-inactive {
+    background-color: hsl(var(--muted-foreground));
+}
+
+.procurement-results .project-card-procurement{opacity:0;transform:translateY(20px);animation:fadeInProcurement .5s ease-out forwards;transition:transform .3s ease-in-out,box-shadow .3s ease-in-out;position:relative;overflow:hidden;background-color:hsl(var(--card))}.procurement-results .project-card-procurement:before{content:"";position:absolute;inset:0;border-radius:var(--radius);padding:1px;background:linear-gradient(135deg,hsl(var(--primary)/.2),hsl(var(--card)));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;transition:opacity .3s ease-in-out;opacity:0}.procurement-results .project-card-procurement:hover:before{opacity:1}.procurement-results .project-card-procurement:hover{transform:translateY(-5px);box-shadow:0 8px 25px -5px hsla(var(--primary)/.15),0 5px 10px -6px hsla(var(--primary)/.1)}.procurement-results .project-card-procurement:first-child{animation-delay:.1s}.procurement-results .project-card-procurement:nth-child(2){animation-delay:.2s}.procurement-results .project-card-procurement:nth-child(3){animation-delay:.3s}.procurement-results .project-card-procurement:nth-child(4){animation-delay:.4s}.procurement-results .project-card-procurement:nth-child(5){animation-delay:.5s}@keyframes fadeInProcurement{to{opacity:1;transform:translateY(0)}}
+
+.project-card{transition:all .2s ease-in-out}.project-card:hover{transform:translateY(-5px);box-shadow:0 4px 20px -5px hsla(var(--primary)/.2);border-color:hsl(var(--primary)/.2)}.status-approved{background-color:hsl(var(--chart-2)/.1);color:hsl(var(--chart-2))}.priority-indicator{height:6px;background-color:hsl(var(--secondary));border-radius:3px;overflow:hidden}.priority-bar{height:100%;background:linear-gradient(to right,hsl(var(--chart-3)),hsl(var(--destructive)));border-radius:3px}.timeline{position:relative;padding-left:2rem}.timeline:before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background-color:hsl(var(--border))}.timeline-item{position:relative;padding-left:2rem;padding-bottom:2rem}.timeline-item:last-child{padding-bottom:0}.timeline-item:before{content:"";position:absolute;left:-7px;top:5px;width:16px;height:16px;border-radius:9999px;background-color:hsl(var(--background));border:3px solid}.timeline-item.income:before{border-color:hsl(var(--chart-2))}.timeline-item.expense:before{border-color:hsl(var(--chart-4))}.cash-flow-chart{position:relative;height:200px;width:100%}.cash-flow-line{position:absolute;left:5%;right:5%;top:50%;height:2px;background-color:hsl(var(--border))}.cash-flow-point{position:absolute;width:12px;height:12px;border-radius:9999px;border:2px solid hsl(var(--background));transform:translate(-50%,-50%);cursor:pointer;transition:transform .2s ease}.cash-flow-point:hover{transform:translate(-50%,-50%) scale(1.2)}.cash-flow-point.income{background-color:hsl(var(--chart-2))}.cash-flow-point.expense{background-color:hsl(var(--chart-4))}.cash-flow-connector{position:absolute;height:2px;background:linear-gradient(to right,hsl(var(--chart-2)),hsl(var(--chart-4)));transform-origin:left center}.badge-pulse{animation:pulse 1.5s infinite}
