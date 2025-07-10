@@ -12,6 +12,7 @@ import { Search, BrainCircuit, FileDown, Target, TrendingUp, Sparkles, Building2
 import { findBiddableProjects } from '@/ai/flows/find-biddable-projects';
 import type { FindBiddableProjectsOutput } from '@/ai/flows/find-biddable-projects-shared';
 import Link from 'next/link';
+import AnalysisHistory from '@/components/analysis-history';
 import './procurement.css';
 
 export default function ProcurementPage() {
@@ -19,14 +20,45 @@ export default function ProcurementPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<FindBiddableProjectsOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [keywords, setKeywords] = useState<string[]>([]);
+  const [selectedProjectType, setSelectedProjectType] = useState<string | null>(null);
+
+  const extractKeywords = (text: string): string[] => {
+    const lowerText = text.toLowerCase();
+    const stopWords = ['และ', 'หรือ', 'การ', 'ที่', 'โดย', 'ใน', 'บน', 'กับ', 'ของ'];
+    const words = lowerText.split(/[\s,.-]+/);
+    const keywords = words.filter(word => word.length > 2 && !stopWords.includes(word));
+    return [...new Set(keywords)]; // ตัดคำซ้ำ
+  };
 
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
     setResults(null);
+    
+    // สกัดคำสำคัญจากคำค้นหา
+    const extractedKeywords = extractKeywords(query);
+    setKeywords(extractedKeywords);
+    
     try {
       const res = await findBiddableProjects({ query });
       setResults(res);
+      
+      // หากมีผลลัพธ์ ตรวจสอบประเภทโครงการที่พบมากที่สุด
+      if (res.projects.length > 0) {
+        const projectTypes = res.projects.map(p => p.type);
+        const typeCounts = projectTypes.reduce((acc: any, type: any) => {
+          acc[type || 'unknown'] = (acc[type || 'unknown'] || 0) + 1;
+          return acc;
+        }, {});
+        
+        // ดึงประเภทที่พบมากที่สุด
+        const mostCommonType = Object.entries(typeCounts)
+          .sort((a: any, b: any) => b[1] - a[1])
+          .map(entry => entry[0])[0];
+        
+        setSelectedProjectType(mostCommonType !== 'unknown' ? mostCommonType : null);
+      }
     } catch (e) {
       setError('เกิดข้อผิดพลาดในการค้นหาโครงการ ขออภัยในความไม่สะดวก');
       console.error(e);
@@ -106,8 +138,10 @@ export default function ProcurementPage() {
         {error && <p className="text-destructive text-center">{error}</p>}
         
         {results && (
-          <div className="procurement-results grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {results.projects.map((project: any, index: number) => (
+          <div>
+            <AnalysisHistory projectType={selectedProjectType} keywords={keywords} />
+            <div className="procurement-results grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+              {results.projects.map((project: any, index: number) => (
               <Card key={index} className="flex flex-col project-card-procurement">
                 <CardHeader>
                   <div className="flex justify-between items-start gap-2">
@@ -165,6 +199,7 @@ export default function ProcurementPage() {
                 </CardFooter>
               </Card>
             ))}
+            </div>
           </div>
         )}
       </div>

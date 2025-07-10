@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -13,6 +12,11 @@ import {
   Briefcase,
   ChartNoAxesColumnIncreasing,
   BarChart3,
+  TrendingUp,
+  Database,
+  FileSpreadsheet,
+  Calculator,
+  LineChart,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -62,6 +66,21 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/procurement/price-list')}>
+              <Link href="/procurement/price-list"><Database /><span>สินค้าไพรีส</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/procurement/price-comparison')}>
+              <Link href="/procurement/price-comparison"><LineChart /><span>เปรียบเทียบราคา</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/procurement/boq-generator')}>
+              <Link href="/procurement/boq-generator"><FileSpreadsheet /><span>สร้าง BOQ</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/analysis')}>
               <Link href="/analysis"><ChartNoAxesColumnIncreasing /><span>วิเคราะห์โครงการ</span></Link>
             </SidebarMenuButton>
@@ -69,6 +88,16 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/finance')}>
               <Link href="/finance"><Wallet /><span>บริหารการเงิน</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/market')}>
+              <Link href="/market"><TrendingUp /><span>วิเคราะห์ตลาดหุ้น</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/market/trends')}>
+              <Link href="/market/trends"><BarChart3 /><span>แนวโน้มตลาด</span></Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

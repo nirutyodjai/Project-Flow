@@ -1,0 +1,104 @@
+'use client'
+
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { PageHeader } from '@/components/page-header';
+import { FileText, FileSpreadsheet, BarChart, ScatterChart } from 'lucide-react';
+
+// นำเข้าคอมโพเนนต์สำหรับการวิเคราะห์แต่ละประเภท
+import TORImageAnalysis from './components/tor-image-analysis';
+import TORTextAnalysis from './components/tor-text-analysis';
+import BOQAnalysis from './components/boq-analysis';
+import ConsistencyAnalysis from './components/consistency-analysis';
+
+export default function AnalysisPage() {
+    // สถานะสำหรับการแชร์ข้อมูลระหว่างแท็บ
+    const [torAnalysisId, setTorAnalysisId] = useState<string | null>(null);
+    const [torDocumentId, setTorDocumentId] = useState<string | null>(null);
+    const [boqAnalysisId, setBoqAnalysisId] = useState<string | null>(null);
+    const [boqDocumentId, setBoqDocumentId] = useState<string | null>(null);
+    const [projectId, setProjectId] = useState<string | null>(null);
+    const [projectName, setProjectName] = useState<string>('');
+
+    // ฟังก์ชันสำหรับอัพเดทข้อมูล TOR
+    const handleTorAnalysisComplete = (analysisId: string, docId: string, projId?: string, projName?: string) => {
+        setTorAnalysisId(analysisId);
+        setTorDocumentId(docId);
+        if (projId) setProjectId(projId);
+        if (projName) setProjectName(projName);
+    };
+
+    // ฟังก์ชันสำหรับอัพเดทข้อมูล BOQ
+    const handleBoqAnalysisComplete = (analysisId: string, docId: string, projId?: string, projName?: string) => {
+        setBoqAnalysisId(analysisId);
+        setBoqDocumentId(docId);
+        if (projId) setProjectId(projId);
+        if (projName) setProjectName(projName);
+    };
+
+    return (
+        <div className="h-full flex flex-col w-full bg-background text-foreground overflow-y-auto custom-scrollbar">
+            <PageHeader 
+                title="วิเคราะห์เอกสารประมูล"
+                description="วิเคราะห์เอกสาร TOR และ BOQ เพื่อประเมินโครงการและโอกาสในการประมูล"
+            />
+            
+            <div className="flex-1 p-4 sm:p-6 lg:p-8">
+                <Tabs defaultValue="tor-image" className="w-full">
+                    <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-8">
+                        <TabsTrigger value="tor-image" className="text-center">
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span className="hidden md:inline">วิเคราะห์ TOR (รูปภาพ)</span>
+                            <span className="md:hidden">TOR รูปภาพ</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="tor-text" className="text-center">
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span className="hidden md:inline">วิเคราะห์ TOR (ข้อความ)</span>
+                            <span className="md:hidden">TOR ข้อความ</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="boq" className="text-center">
+                            <FileSpreadsheet className="mr-2 h-4 w-4" />
+                            <span className="hidden md:inline">วิเคราะห์ BOQ</span>
+                            <span className="md:hidden">BOQ</span>
+                        </TabsTrigger>
+                        <TabsTrigger value="consistency" className="text-center">
+                            <BarChart className="mr-2 h-4 w-4" />
+                            <span className="hidden md:inline">วิเคราะห์ความสอดคล้อง</span>
+                            <span className="md:hidden">ความสอดคล้อง</span>
+                        </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="tor-image">
+                        <TORImageAnalysis onAnalysisComplete={handleTorAnalysisComplete} />
+                    </TabsContent>
+
+                    <TabsContent value="tor-text">
+                        <TORTextAnalysis 
+                            onAnalysisComplete={handleTorAnalysisComplete}
+                            projectId={projectId}
+                            projectName={projectName}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="boq">
+                        <BOQAnalysis 
+                            onAnalysisComplete={handleBoqAnalysisComplete}
+                            torDocumentId={torDocumentId}
+                            projectId={projectId}
+                            projectName={projectName}
+                        />
+                    </TabsContent>
+
+                    <TabsContent value="consistency">
+                        <ConsistencyAnalysis 
+                            torAnalysisId={torAnalysisId}
+                            boqAnalysisId={boqAnalysisId}
+                            projectId={projectId}
+                            projectName={projectName}
+                        />
+                    </TabsContent>
+                </Tabs>
+            </div>
+        </div>
+    );
+}

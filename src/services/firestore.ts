@@ -163,6 +163,142 @@ export async function listContacts(): Promise<Contact[] | null> {
 }
 
 /**
+ * Fetches contacts by type from Firestore.
+ * @param type The type of contacts to fetch, e.g., 'ลูกค้า', 'ซัพพลายเออร์', etc.
+ * @param searchTerm Optional search term to filter contacts by name.
+ * @param limitCount Optional limit on the number of results.
+ * @returns A promise that resolves to an array of contacts of the specified type.
+ */
+export async function getContactsByType(
+    type: string,
+    searchTerm?: string,
+    limitCount: number = 20
+): Promise<Contact[] | null> {
+    console.log(`Fetching contacts of type "${type}" from Firestore`);
+    try {
+        const db = getDb();
+        if (!db) {
+            console.warn('Firestore not initialized');
+            return [];
+        }
+        
+        const contactsCol = collection(db, 'contacts');
+        
+        let conditions: any[] = [where('type', '==', type)];
+        
+        if (searchTerm) {
+            conditions.push(where('name', '>=', searchTerm));
+            conditions.push(where('name', '<=', searchTerm + '\uf8ff'));
+        }
+        
+        const q = query(
+            contactsCol,
+            ...conditions,
+            orderBy('name'),
+            limit(limitCount)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const contactList = querySnapshot.docs.map(doc => mapDocToContact({ id: doc.id, ...doc.data() }));
+        return contactList;
+    } catch (error) {
+        console.error(`Error fetching contacts of type "${type}" from Firestore:`, error);
+        return [];
+    }
+}
+
+/**
+ * Adds a new contact to Firestore.
+ * @param contact The contact data to add.
+ * @returns A promise that resolves to the created contact with its ID.
+ */
+export async function addContact(contact: Omit<Contact, 'id'>): Promise<Contact> {
+    console.log('Adding new contact to Firestore');
+    try {
+        const db = getDb();
+        if (!db) throw new Error('Firestore not initialized');
+        
+        const contactData = {
+            ...contact,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        };
+        
+        const docRef = await addDoc(collection(db, 'contacts'), contactData);
+        return { id: docRef.id, ...contact };
+    } catch (error) {
+        console.error("Error adding contact to Firestore: ", error);
+        throw new Error("Failed to add contact");
+    }
+}
+
+/**
+ * Gets a contact from Firestore by ID.
+ * @param id The ID of the contact to get.
+ * @returns A promise that resolves to the contact with the specified ID, or null if not found.
+ */
+export async function getContact(id: string): Promise<Contact | null> {
+    console.log(`Getting contact with id: ${id}`);
+    try {
+        const db = getDb();
+        if (!db) throw new Error('Firestore not initialized');
+        
+        const docRef = doc(db, 'contacts', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            return null;
+        }
+        
+        return mapDocToContact({ id: docSnap.id, ...docSnap.data() });
+    } catch (error) {
+        console.error("Error getting contact from Firestore: ", error);
+        throw new Error("Failed to get contact");
+    }
+}
+
+/**
+ * Updates a contact in Firestore by ID.
+ * @param id The ID of the contact to update.
+ * @param contact The updated contact data.
+ * @returns A promise that resolves to the updated contact with its ID.
+ */
+export async function updateContact(id: string, contact: Partial<Omit<Contact, 'id'>>): Promise<Contact> {
+    console.log(`Updating contact with id: ${id}`);
+    try {
+        const db = getDb();
+        if (!db) throw new Error('Firestore not initialized');
+        
+        // Get existing contact to merge with updates
+        const docRef = doc(db, 'contacts', id);
+        const docSnap = await getDoc(docRef);
+        
+        if (!docSnap.exists()) {
+            throw new Error(`Contact with ID ${id} not found`);
+        }
+        
+        const existingContact = docSnap.data();
+        
+        const updateData = {
+            ...contact,
+            updatedAt: serverTimestamp()
+        };
+        
+        await updateDoc(docRef, updateData);
+        
+        // Return the updated contact
+        return {
+            id,
+            ...existingContact,
+            ...contact
+        } as Contact;
+    } catch (error) {
+        console.error("Error updating contact in Firestore: ", error);
+        throw new Error("Failed to update contact");
+    }
+}
+
+/**
  * Deletes a contact from Firestore by ID.
  * @param id The ID of the contact to delete.
  */
