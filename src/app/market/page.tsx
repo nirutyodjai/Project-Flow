@@ -1,3 +1,4 @@
+
 'use client';
 
 /**
@@ -7,14 +8,19 @@ import { useState } from 'react';
 import Link from 'next/link';
 import {
   Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle,
-  Tabs, TabsContent, TabsList, TabsTrigger,
-  Button, Input, Label, Textarea,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-  Separator, Alert, AlertDescription,
-  CheckboxItem, CheckboxIndicator
-} from "@/components/ui";
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Search, LineChart, BookOpen, BarChart3, TrendingUp, RefreshCw, Trophy, Gamepad2 } from "lucide-react";
-import PageHeader from "@/components/page-header";
+import { PageHeader } from "@/components/page-header";
 
 export default function MarketAnalysisPage() {
   // สถานะสำหรับการวิเคราะห์หุ้นรายตัว

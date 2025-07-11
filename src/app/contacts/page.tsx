@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
   Table,
   TableBody,
@@ -26,6 +26,9 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { type Contact } from '@/services/firestore';
 import { cn } from '@/lib/utils';
 import { PageHeader } from '@/components/page-header';
+import { listContacts } from '@/services/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const contactTypeStyles: { [key: string]: string } = {
@@ -36,20 +39,6 @@ const contactTypeStyles: { [key: string]: string } = {
   'ซับคอนแทรค': 'bg-pink-900/30 text-pink-300 border-pink-400/30',
 };
 
-const mockData = [
-    { id: '1', type: "ลูกค้า", name: "บริษัท พัฒนาที่ดินไทย จำกัด", email: "contact@thaidev.co.th", phone: "02-123-4567", address: "123 ถนนสาทร แขวงทุ่งมหาเมฆ เขตสาทร กรุงเทพฯ 10120", contactPerson: "คุณสมศักดิ์ มั่นคง", lastContact: "2 วันที่แล้ว", activity: 'recent', rating: 4 },
-    { id: '2', type: "ซัพพลายเออร์", name: "ห้างหุ้นส่วนจำกัด วัสดุภัณฑ์", email: "sales@wasadu.co.th", phone: "02-345-6789", address: "456 ถนนพระราม 9 แขวงบางกะปิ เขตห้วยขวาง กรุงเทพฯ 10310", contactPerson: "คุณวิชัย รุ่งเรือง", lastContact: "1 วันที่แล้ว", activity: 'recent', rating: 5 },
-    { id: '3', type: "ดีลเลอร์", name: "บริษัท เอ็นเอส เทรดดิ้ง จำกัด", email: "info@nstrading.co.th", phone: "02-567-8901", address: "789 ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400", contactPerson: "คุณนภา สุขสวัสดิ์", lastContact: "7 วันที่แล้ว", activity: 'medium', rating: 3 },
-    { id: '4', type: "ผู้รับเหมา", name: "บริษัท ก่อสร้างไทย จำกัด", email: "contact@thaiconstruction.co.th", phone: "02-890-1234", address: "101 ถนนวิภาวดีรังสิต แขวงจตุจักร เขตจตุจักร กรุงเทพฯ 10900", contactPerson: "คุณประเสริฐ ก่อเกียรติ", lastContact: "วันนี้", activity: 'recent', rating: 5 },
-    { id: '5', type: "ซับคอนแทรค", name: "บริษัท ระบบไฟฟ้าไทย จำกัด", email: "info@thaielectric.co.th", phone: "02-456-7890", address: "222 ถนนพัฒนาการ แขวงสวนหลวง เขตสวนหลวง กรุงเทพฯ 10250", contactPerson: "คุณสมชาย ไฟฟ้า", lastContact: "3 วันที่แล้ว", activity: 'recent', rating: 4 },
-    { id: '6', type: "ลูกค้า", name: "บริษัท เรียลเอสเตท กรุ๊ป", email: "hello@realestategroup.com", phone: "02-987-6543", address: "1/2 อาคารวันซิตี้เซ็นเตอร์ ถนนเพลินจิต กรุงเทพฯ", contactPerson: "คุณอารยา เจริญสุข", lastContact: "1 เดือนที่แล้ว", activity: 'inactive', rating: 3 },
-    { id: '7', type: "ซัพพลายเออร์", name: "บริษัท ปูนซีเมนต์ไทย จำกัด (มหาชน)", email: "cement@scc.co.th", phone: "02-586-3333", address: "1 ถนนปูนซิเมนต์ไทย แขวงบางซื่อ เขตบางซื่อ กรุงเทพฯ 10800", contactPerson: "ฝ่ายจัดซื้อ", lastContact: "5 วันที่แล้ว", activity: 'medium', rating: 5 },
-    { id: '8', type: "ผู้รับเหมา", name: "บริษัท อิตาเลียนไทย ดีเวล๊อปเมนต์ จำกัด (มหาชน)", email: "info@itd.co.th", phone: "02-733-4000", address: "2034/132-161 อาคารอิตัลไทย ทาวเวอร์ ถนนเพชรบุรีตัดใหม่ แขวงบางกะปิ เขตห้วยขวาง กรุงเทพฯ 10310", contactPerson: "คุณเปรมชัย กรรณสูต", lastContact: "10 วันที่แล้ว", activity: 'medium', rating: 4 },
-    { id: '9', type: "ลูกค้า", name: "มหาวิทยาลัยเกษตรศาสตร์", email: "registrar@ku.ac.th", phone: "02-579-0113", address: "50 ถนนงามวงศ์วาน แขวงลาดยาว เขตจตุจักร กรุงเทพฯ 10900", contactPerson: "ฝ่ายอาคารและสถานที่", lastContact: "2 เดือนที่แล้ว", activity: 'inactive', rating: 4 },
-    { id: '10', type: "ดีลเลอร์", name: "บริษัท โฮม โปรดักส์ เซ็นเตอร์ จำกัด (มหาชน)", email: "info@homepro.co.th", phone: "02-832-1000", address: "96/27 หมู่ที่ 9 ตำบลบางเขน อำเภอเมืองนนทบุรี จังหวัดนนทบุรี 11000", contactPerson: "ฝ่ายจัดซื้อโครงการ", lastContact: "12 วันที่แล้ว", activity: 'medium', rating: 4 },
-    { id: '11', type: "ซับคอนแทรค", name: "บริษัท ไทยแอร์คอนดิชั่น จำกัด", email: "service@thaiac.co.th", phone: "02-722-9999", address: "1234 ถนนสุขุมวิท แขวงพระโขนง เขตคลองเตย กรุงเทพฯ 10110", contactPerson: "คุณวิรัช ตั้งใจ", lastContact: "4 วันที่แล้ว", activity: 'recent', rating: 3 },
-];
-
 const activityStyles: { [key: string]: string } = {
     'recent': 'activity-recent',
     'medium': 'activity-medium',
@@ -58,15 +47,15 @@ const activityStyles: { [key: string]: string } = {
 
 const tabFilters = [
     { value: 'all', label: 'ทั้งหมด', filter: () => true },
-    { value: 'customer', label: 'ลูกค้า', filter: (contact: Contact) => contact.type === 'ลูกค้า' },
-    { value: 'supplier', label: 'ซัพพลายเออร์', filter: (contact: Contact) => contact.type === 'ซัพพลายเออร์' },
-    { value: 'dealer', label: 'ดีลเลอร์', filter: (contact: Contact) => contact.type === 'ดีลเลอร์' },
-    { value: 'contractor', label: 'ผู้รับเหมา', filter: (contact: Contact) => contact.type === 'ผู้รับเหมา' },
-    { value: 'subcontractor', label: 'ซับคอนแทรค', filter: (contact: Contact) => contact.type === 'ซับคอนแทรค' },
+    { value: 'ลูกค้า', label: 'ลูกค้า', filter: (contact: Contact) => contact.type === 'ลูกค้า' },
+    { value: 'ซัพพลายเออร์', label: 'ซัพพลายเออร์', filter: (contact: Contact) => contact.type === 'ซัพพลายเออร์' },
+    { value: 'ดีลเลอร์', label: 'ดีลเลอร์', filter: (contact: Contact) => contact.type === 'ดีลเลอร์' },
+    { value: 'ผู้รับเหมา', label: 'ผู้รับเหมา', filter: (contact: Contact) => contact.type === 'ผู้รับเหมา' },
+    { value: 'ซับคอนแทรค', label: 'ซับคอนแทรค', filter: (contact: Contact) => contact.type === 'ซับคอนแทรค' },
     { value: 'favorite', label: 'รายการโปรด', filter: (contact: any) => contact.rating >= 4 },
 ];
 
-const ContactsTable = ({ contacts }: { contacts: (Contact & { activity: string, rating: number })[] }) => {
+const ContactsTable = ({ contacts }: { contacts: (Contact & { activity: string, rating: number, lastContact: string })[] }) => {
     return (
         <Card>
             <Table>
@@ -84,7 +73,7 @@ const ContactsTable = ({ contacts }: { contacts: (Contact & { activity: string, 
                 </TableHeader>
                 <TableBody>
                     {contacts.map((contact) => (
-                        <TableRow key={contact.email}>
+                        <TableRow key={contact.id}>
                             <TableCell><Checkbox /></TableCell>
                             <TableCell>
                                 <div className="flex items-center gap-3">
@@ -141,15 +130,46 @@ const ContactsTable = ({ contacts }: { contacts: (Contact & { activity: string, 
 
 
 export default function ContactsPage() {
-    // For now, we use mock data. In a real application, you would fetch this data.
-    const [contacts] = useState(mockData); 
+    const [contacts, setContacts] = useState<(Contact & { activity: string, rating: number, lastContact: string })[]>([]); 
+    const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('all');
+    const { toast } = useToast();
+
+    useEffect(() => {
+      const fetchContacts = async () => {
+        setIsLoading(true);
+        try {
+          const data = await listContacts();
+          if (data) {
+            // Add mock activity, rating, lastContact for display purposes
+            const contactsWithMockData = data.map(contact => ({
+              ...contact,
+              activity: ['recent', 'medium', 'inactive'][Math.floor(Math.random() * 3)],
+              rating: Math.floor(Math.random() * 3) + 3, // 3 to 5 stars
+              lastContact: `${Math.floor(Math.random() * 10) + 1} วันที่แล้ว`,
+            }));
+            setContacts(contactsWithMockData);
+          }
+        } catch (error) {
+          toast({
+            title: "เกิดข้อผิดพลาด",
+            description: "ไม่สามารถโหลดข้อมูลผู้ติดต่อได้",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchContacts();
+    }, [toast]);
+
 
     const filteredContacts = useMemo(() => {
         const currentFilter = tabFilters.find(f => f.value === activeTab)?.filter || (() => true);
         
-        const filteredByType = contacts.filter(currentFilter);
+        const filteredByType = contacts.filter(currentFilter as (contact: Contact) => boolean);
         
         if (!searchTerm) {
             return filteredByType;
@@ -208,7 +228,17 @@ export default function ContactsPage() {
 
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <TabsContent value={activeTab} className="p-4 sm:p-6 lg:p-8 mt-0">
-                            <ContactsTable contacts={filteredContacts} />
+                           {isLoading ? (
+                                <div className="space-y-2">
+                                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+                                </div>
+                           ) : filteredContacts.length > 0 ? (
+                                <ContactsTable contacts={filteredContacts} />
+                           ) : (
+                                <div className="text-center py-16 text-muted-foreground">
+                                    <p>ไม่พบข้อมูลผู้ติดต่อที่ตรงกับเงื่อนไข</p>
+                                </div>
+                           )}
                         </TabsContent>
                     </div>
                 </Tabs>
