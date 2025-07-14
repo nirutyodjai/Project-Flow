@@ -38,6 +38,7 @@ import { CalendarIcon, Download, FileSpreadsheet, Filter, Plus, SquarePen, Trash
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { addAdminProject, updateAdminProject, deleteAdminProject, listAdminProjects, addTask, updateTask, deleteTask, listTasks } from '@/services/firestore';
+import { getDb } from '@/services/firebase';
 import { AdminProject, Task } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
@@ -48,6 +49,7 @@ export default function AdminPage() {
     const [projects, setProjects] = useState<AdminProject[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const { toast } = useToast();
+    const [firebaseStatus, setFirebaseStatus] = useState<'checking' | 'connected' | 'error'>('checking');
     
     const [isProjectDialogOpen, setProjectDialogOpen] = useState(false);
     const [isTaskDialogOpen, setTaskDialogOpen] = useState(false);
@@ -87,6 +89,7 @@ export default function AdminPage() {
     
     // Load data on component mount
     useEffect(() => {
+        checkFirebaseConnection();
         loadProjects();
         loadTasks();
     }, []);
@@ -95,6 +98,26 @@ export default function AdminPage() {
     useEffect(() => {
         updateStatistics();
     }, [projects, tasks]);
+
+    const checkFirebaseConnection = async () => {
+        try {
+            const db = getDb();
+            if (db) {
+                setFirebaseStatus('connected');
+                logger.info('Firebase connection successful.', undefined, 'AdminPage');
+            } else {
+                throw new Error('Firestore not initialized');
+            }
+        } catch (error) {
+            setFirebaseStatus('error');
+            logger.error('Firebase connection failed.', error, 'AdminPage');
+            toast({
+                title: 'การเชื่อมต่อล้มเหลว',
+                description: 'ไม่สามารถเชื่อมต่อกับ Firebase ได้ โปรดตรวจสอบการตั้งค่า',
+                variant: 'destructive',
+            });
+        }
+    };
     
     // Function to update statistics
     const updateStatistics = () => {

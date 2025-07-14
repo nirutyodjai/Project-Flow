@@ -52,57 +52,57 @@ export default function FirebaseDataViewPage() {
 
       // Load all data in parallel
       const [projects, contacts, adminProjects, tasks] = await Promise.all([
-        listProjects(),
-        listContacts(), 
+        listProjects({}),
+        listContacts(),
         listAdminProjects(),
         listTasks()
       ]);
 
       // Analyze projects
       const projectsByType: Record<string, number> = {};
-      projects.forEach(project => {
-        projectsByType[project.type] = (projectsByType[project.type] || 0) + 1;
+      (projects ?? []).forEach(project => {
+        projectsByType[project.type ?? 'Unknown'] = (projectsByType[project.type ?? 'Unknown'] || 0) + 1;
       });
 
       // Analyze contacts
       const contactsByType: Record<string, number> = {};
-      contacts.forEach(contact => {
-        contactsByType[contact.type] = (contactsByType[contact.type] || 0) + 1;
+      (contacts ?? []).forEach(contact => {
+        contactsByType[contact.type ?? 'Unknown'] = (contactsByType[contact.type ?? 'Unknown'] || 0) + 1;
       });
 
       // Analyze admin projects
       const adminProjectsByStatus: Record<string, number> = {};
       let totalProgress = 0;
-      adminProjects.forEach(project => {
+      (adminProjects ?? []).forEach(project => {
         adminProjectsByStatus[project.status] = (adminProjectsByStatus[project.status] || 0) + 1;
         totalProgress += project.progress;
       });
-      const avgProgress = adminProjects.length > 0 ? totalProgress / adminProjects.length : 0;
+      const avgProgress = (adminProjects ?? []).length > 0 ? totalProgress / (adminProjects ?? []).length : 0;
 
       // Analyze tasks
       const tasksByPriority: Record<string, number> = {};
       let completedTasks = 0;
-      tasks.forEach(task => {
+      (tasks ?? []).forEach(task => {
         tasksByPriority[task.priority] = (tasksByPriority[task.priority] || 0) + 1;
         if (task.checked) completedTasks++;
       });
 
       const summary: DataSummary = {
         projects: {
-          total: projects.length,
+          total: (projects ?? []).length,
           byType: projectsByType,
         },
         contacts: {
-          total: contacts.length,
+          total: (contacts ?? []).length,
           byType: contactsByType,
         },
         adminProjects: {
-          total: adminProjects.length,
+          total: (adminProjects ?? []).length,
           byStatus: adminProjectsByStatus,
           avgProgress,
         },
         tasks: {
-          total: tasks.length,
+          total: (tasks ?? []).length,
           completed: completedTasks,
           byPriority: tasksByPriority,
         },
@@ -303,7 +303,7 @@ export default function FirebaseDataViewPage() {
             <CardDescription>แยกตามระดับความสำคัญ</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {Object.entries(dataSummary.tasks.byPriority).map(([priority, count]) => (
+            {Object.entries(dataSummary.tasks.byPriority ?? {}).map(([priority, count]) => (
               <div key={priority} className="flex justify-between items-center">
                 <span className="text-sm">{priority}</span>
                 <Badge 

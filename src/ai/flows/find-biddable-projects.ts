@@ -370,6 +370,7 @@ const findBiddableProjectsFlow = ai.defineFlow(
         contactPerson: p.contactPerson,
         phone: p.phone,
         documentUrl: p.documentUrl,
+        bidSubmissionDeadline: p.bidSubmissionDeadline,
         
         // ข้อมูลการวิเคราะห์ที่ปรับปรุงแล้ว
         analysis,

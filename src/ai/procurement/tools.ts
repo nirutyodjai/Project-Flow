@@ -1,21 +1,21 @@
-/**
+'''/**
  * @fileOverview เครื่องมือ AI เฉพาะทางสำหรับการวิเคราะห์โครงการประมูล
  * ไฟล์นี้รวมเครื่องมือต่างๆ ที่ช่วยในการวิเคราะห์โครงการประมูลอย่างลึกซึ้ง
  * เพื่อให้ AI สามารถให้คำแนะนำที่มีประสิทธิภาพมากขึ้น
  */
 
 import { z } from 'genkit';
+import { generate } from 'genkit/ai';
 import { procurementAI } from '@/ai/genkit';
 
 /**
- * วิเคราะห์ความเหมาะสมของโครงการกับความสามารถของบริษัท
- * เครื่องมือนี้วิเคราะห์รายละเอียดโครงการและประเมินว่าเหมาะสมกับทักษะและ
- * ประสบการณ์ของบริษัทหรือไม่
+ * วิเคราะห์ความเหมาะสมของโครงการกับความสามารถของบริษัท (ปรับปรุงใหม่)
+ * ใช้ LLM ในการวิเคราะห์เชิงลึกแบบ SWOT Analysis เพื่อให้คำแนะนำที่ละเอียดและมีคุณภาพสูง
  */
 export const analyzeProjectFit = procurementAI.defineTool(
   {
     name: 'analyzeProjectFit',
-    description: 'วิเคราะห์ความเหมาะสมของโครงการกับความสามารถของบริษัท',
+    description: 'วิเคราะห์ความเหมาะสมของโครงการกับความสามารถของบริษัท (ปรับปรุงใหม่)',
     inputSchema: z.object({
       projectDetails: z.object({
         name: z.string().describe('ชื่อโครงการ'),
@@ -31,83 +31,83 @@ export const analyzeProjectFit = procurementAI.defineTool(
     }),
     outputSchema: z.object({
       fitScore: z.number().min(0).max(100).describe('คะแนนความเหมาะสม (0-100)'),
-      strengthPoints: z.array(z.string()).describe('จุดแข็งของบริษัทที่เหมาะกับโครงการนี้'),
-      weaknessPoints: z.array(z.string()).describe('จุดอ่อนที่อาจเป็นอุปสรรค'),
-      recommendation: z.string().describe('คำแนะนำโดยรวม'),
+      swotAnalysis: z.object({
+        strengths: z.array(z.string()).describe('จุดแข็ง (Strengths) ของบริษัทที่สอดคล้องกับโครงการ'),
+        weaknesses: z.array(z.string()).describe('จุดอ่อน (Weaknesses) ที่อาจเป็นอุปสรรค'),
+        opportunities: z.array(z.string()).describe('โอกาส (Opportunities) จากการทำโครงการนี้'),
+        threats: z.array(z.string()).describe('อุปสรรค (Threats) หรือความเสี่ยงที่อาจเกิดขึ้น'),
+      }).describe('การวิเคราะห์ SWOT'),
+      recommendation: z.string().describe('คำแนะนำโดยรวมและกลยุทธ์ในการเข้าร่วมประมูล'),
     }),
   },
   async ({ projectDetails, companyCapabilities }) => {
-    // คำนวณคะแนนความเหมาะสม
-    let fitScore = 0;
-    const strengthPoints: string[] = [];
-    const weaknessPoints: string[] = [];
-    
-    // ตรวจสอบความเชี่ยวชาญที่ตรงกับโครงการ
-    const expertiseMatch = companyCapabilities.expertise.filter(exp => 
-      projectDetails.requirements.some(req => 
-        req.toLowerCase().includes(exp.toLowerCase())
-      )
-    );
-    
-    if (expertiseMatch.length > 0) {
-      fitScore += 40 * (expertiseMatch.length / projectDetails.requirements.length);
-      strengthPoints.push(`บริษัทมีความเชี่ยวชาญตรงกับความต้องการของโครงการ: ${expertiseMatch.join(', ')}`);
-    } else {
-      weaknessPoints.push('ไม่พบความเชี่ยวชาญที่ตรงกับความต้องการของโครงการ');
-    }
-    
-    // ตรวจสอบประสบการณ์โครงการที่คล้ายกัน
-    const relevantProjects = companyCapabilities.pastProjects.filter(project => 
-      project.toLowerCase().includes(projectDetails.type.toLowerCase())
-    );
-    
-    if (relevantProjects.length > 0) {
-      fitScore += 30 * Math.min(relevantProjects.length / 3, 1);
-      strengthPoints.push(`บริษัทมีประสบการณ์ในโครงการประเภท ${projectDetails.type} จำนวน ${relevantProjects.length} โครงการ`);
-    } else {
-      weaknessPoints.push(`บริษัทไม่มีประสบการณ์ในโครงการประเภท ${projectDetails.type}`);
-    }
-    
-    // ตรวจสอบทรัพยากร
-    const resourcesNeeded = projectDetails.requirements.length;
-    const resourceScore = Math.min(companyCapabilities.resources.length / resourcesNeeded, 1) * 30;
-    fitScore += resourceScore;
-    
-    if (resourceScore > 15) {
-      strengthPoints.push('บริษัทมีทรัพยากรเพียงพอสำหรับโครงการนี้');
-    } else {
-      weaknessPoints.push('บริษัทอาจมีทรัพยากรไม่เพียงพอสำหรับโครงการนี้');
-    }
-    
-    // สร้างคำแนะนำ
-    let recommendation = '';
-    if (fitScore >= 80) {
-      recommendation = 'โครงการนี้เหมาะสมอย่างยิ่งกับบริษัท ควรเข้าร่วมประมูลอย่างเต็มที่';
-    } else if (fitScore >= 60) {
-      recommendation = 'โครงการนี้มีความเหมาะสมกับบริษัท แต่อาจต้องเตรียมการในบางด้าน';
-    } else if (fitScore >= 40) {
-      recommendation = 'โครงการนี้มีความเหมาะสมปานกลาง ควรพิจารณาอย่างรอบคอบ';
-    } else {
-      recommendation = 'โครงการนี้อาจไม่เหมาะสมกับความสามารถของบริษัทในปัจจุบัน';
-    }
-    
-    return {
-      fitScore: Math.round(fitScore),
-      strengthPoints,
-      weaknessPoints,
-      recommendation,
+    const prompt = `
+      ในฐานะที่ปรึกษาโครงการผู้เชี่ยวชาญ, โปรดวิเคราะห์ความเหมาะสมของโครงการต่อไปนี้กับความสามารถของบริษัทที่ให้มา
+
+      **รายละเอียดโครงการ:**
+      - **ชื่อ:** ${projectDetails.name}
+      - **ประเภท:** ${projectDetails.type}
+      - **งบประมาณ:** ${projectDetails.budget}
+      - **ข้อกำหนดหลัก:**
+        - ${projectDetails.requirements.join('
+        - ')}
+
+      **ความสามารถของบริษัท:**
+      - **ความเชี่ยวชาญ:** ${companyCapabilities.expertise.join(', ')}
+      - **โครงการในอดีต:** ${companyCapabilities.pastProjects.join(', ')}
+      - **ทรัพยากร:** ${companyCapabilities.resources.join(', ')}
+
+      **ดำเนินการวิเคราะห์ดังนี้:**
+      1.  **ให้คะแนนความเหมาะสม (Fit Score):** ประเมินจาก 0-100 ว่าโครงการนี้เหมาะสมกับบริษัทเพียงใด
+      2.  **วิเคราะห์ SWOT:**
+          - **Strengths:** จุดแข็งของบริษัทที่ทำให้ได้เปรียบในโครงการนี้คืออะไร?
+          - **Weaknesses:** จุดอ่อนหรือข้อเสียเปรียบของบริษัทมีอะไรบ้าง?
+          - **Opportunities:** โครงการนี้สร้างโอกาสอะไรให้บริษัทได้บ้าง (เช่น ต่อยอดธุรกิจ, สร้างชื่อเสียง)?
+          - **Threats:** มีความเสี่ยงหรืออุปสรรคอะไรที่ต้องระวังบ้าง?
+      3.  **ให้คำแนะนำ (Recommendation):** สรุปว่าบริษัทควรเข้าร่วมประมูลหรือไม่ และถ้าควรเข้าร่วม ควรใช้กลยุทธ์อะไร?
+
+      โปรดตอบกลับในรูปแบบ JSON ที่ตรงกับ outputSchema เท่านั้น
+    `;
+
+    const llmResponse = await generate({
+      model: procurementAI,
+      prompt: prompt,
+      output: {
+        format: 'json',
+        schema: z.object({
+          fitScore: z.number().min(0).max(100),
+          swotAnalysis: z.object({
+            strengths: z.array(z.string()),
+            weaknesses: z.array(z.string()),
+            opportunities: z.array(z.string()),
+            threats: z.array(z.string()),
+          }),
+          recommendation: z.string(),
+        }),
+      },
+    });
+
+    return llmResponse.output() || {
+      fitScore: 0,
+      swotAnalysis: {
+        strengths: [],
+        weaknesses: [],
+        opportunities: [],
+        threats: [],
+      },
+      recommendation: 'ไม่สามารถวิเคราะห์ข้อมูลได้',
     };
   }
 );
 
 /**
- * วิเคราะห์คู่แข่งในการประมูลโครงการ
- * เครื่องมือนี้ประเมินข้อมูลคู่แข่งที่คาดว่าจะเข้าร่วมประมูลและวิเคราะห์จุดแข็ง/จุดอ่อน
+ * วิเคราะห์คู่แข่งในการประมูลโครงการ (ปรับปรุงใหม่)
+ * ใช้ LLM ในการประเมินคู่แข่งและสร้างกลยุทธ์การแข่งขันที่ซับซ้อนและมีประสิทธิภาพ
  */
 export const analyzeCompetitors = procurementAI.defineTool(
   {
     name: 'analyzeCompetitors',
-    description: 'วิเคราะห์คู่แข่งในการประมูลโครงการ',
+    description: 'วิเคราะห์คู่แข่งในการประมูลโครงการ (ปรับปรุงใหม่)',
     inputSchema: z.object({
       projectType: z.string().describe('ประเภทของโครงการ'),
       competitors: z.array(z.object({
@@ -121,85 +121,70 @@ export const analyzeCompetitors = procurementAI.defineTool(
     outputSchema: z.object({
       competitorAnalysis: z.array(z.object({
         competitor: z.string().describe('ชื่อบริษัทคู่แข่ง'),
-        threatLevel: z.number().min(1).max(10).describe('ระดับการคุกคาม 1-10'),
-        winningStrategy: z.string().describe('กลยุทธ์การแข่งขันที่แนะนำ'),
+        threatLevel: z.number().min(1).max(10).describe('ระดับการคุกคาม (1-10)'),
+        counterStrategy: z.string().describe('กลยุทธ์การแข่งขันที่แนะนำเพื่อเอาชนะคู่แข่งรายนี้'),
       })).describe('การวิเคราะห์คู่แข่งแต่ละราย'),
-      overallThreat: z.number().min(1).max(10).describe('ระดับการคุกคามโดยรวม 1-10'),
-      recommendedStrategy: z.string().describe('กลยุทธ์ที่แนะนำในการเอาชนะคู่แข่ง'),
+      overallThreat: z.number().min(1).max(10).describe('ระดับการคุกคามโดยรวม (1-10)'),
+      recommendedStrategy: z.string().describe('กลยุทธ์ภาพรวมที่แนะนำในการเอาชนะคู่แข่งทั้งหมด'),
     }),
   },
   async ({ projectType, competitors, yourCompanyStrengths }) => {
-    // วิเคราะห์คู่แข่งแต่ละราย
-    const competitorAnalysis = competitors.map(competitor => {
-      // คำนวณระดับการคุกคาม
-      let threatLevel = Math.min(competitor.pastWins, 10) * 0.5;
-      
-      // เพิ่มคะแนนตามกลยุทธ์ด้านราคา
-      if (competitor.pricing === 'aggressive') threatLevel += 3;
-      else if (competitor.pricing === 'premium') threatLevel += 1;
-      else threatLevel += 2;
-      
-      // เพิ่มคะแนนตามจุดแข็ง
-      threatLevel += Math.min(competitor.strengths.length, 5);
-      
-      // ปรับคะแนนให้อยู่ในช่วง 1-10
-      threatLevel = Math.min(Math.max(Math.round(threatLevel), 1), 10);
-      
-      // กำหนดกลยุทธ์การแข่งขัน
-      let winningStrategy = '';
-      if (competitor.pricing === 'aggressive') {
-        winningStrategy = 'เน้นจุดแข็งด้านคุณภาพและประสบการณ์ มากกว่าการแข่งขันด้านราคา';
-      } else if (competitor.pricing === 'premium') {
-        winningStrategy = 'เสนอราคาที่แข่งขันได้พร้อมเน้นคุณภาพที่เทียบเท่า';
-      } else {
-        winningStrategy = 'นำเสนอนวัตกรรมและจุดเด่นที่แตกต่าง พร้อมราคาที่สมเหตุสมผล';
-      }
-      
-      return {
-        competitor: competitor.name,
-        threatLevel,
-        winningStrategy,
-      };
+    const prompt = `
+      ในฐานะนักวิเคราะห์กลยุทธ์การแข่งขัน, โปรดวิเคราะห์คู่แข่งในการประมูลโครงการประเภท "${projectType}"
+
+      **จุดแข็งของบริษัทเรา:** ${yourCompanyStrengths.join(', ')}
+
+      **ข้อมูลคู่แข่ง:**
+      ${competitors.map(c => `
+      - **บริษัท:** ${c.name}
+        - **จุดแข็ง:** ${c.strengths.join(', ')}
+        - **ชนะในอดีต:** ${c.pastWins} โครงการ
+        - **กลยุทธ์ราคา:** ${c.pricing}
+      `).join('')}
+
+      **ดำเนินการวิเคราะห์ดังนี้:**
+      1.  **วิเคราะห์คู่แข่งแต่ละราย:**
+          - **ประเมินระดับการคุกคาม (Threat Level):** ให้คะแนน 1-10
+          - **สร้างกลยุทธ์ตอบโต้ (Counter Strategy):** แนะนำกลยุทธ์ที่เฉพาะเจาะจงเพื่อเอาชนะคู่แข่งรายนี้ โดยพิจารณาจากจุดแข็งของเราและจุดอ่อนของคู่แข่ง
+      2.  **ประเมินระดับการคุกคามโดยรวม (Overall Threat):** ให้คะแนน 1-10
+      3.  **สร้างกลยุทธ์ภาพรวม (Recommended Strategy):** แนะนำกลยุทธ์ที่ดีที่สุดในการแข่งขันกับคู่แข่งทั้งหมดในโครงการนี้
+
+      โปรดตอบกลับในรูปแบบ JSON ที่ตรงกับ outputSchema เท่านั้น
+    `;
+
+    const llmResponse = await generate({
+      model: procurementAI,
+      prompt: prompt,
+      output: {
+        format: 'json',
+        schema: z.object({
+          competitorAnalysis: z.array(z.object({
+            competitor: z.string(),
+            threatLevel: z.number().min(1).max(10),
+            counterStrategy: z.string(),
+          })),
+          overallThreat: z.number().min(1).max(10),
+          recommendedStrategy: z.string(),
+        }),
+      },
     });
-    
-    // คำนวณระดับการคุกคามโดยรวม
-    const overallThreat = Math.min(
-      Math.round(
-        competitorAnalysis.reduce((sum, comp) => sum + comp.threatLevel, 0) / 
-        competitorAnalysis.length
-      ), 
-      10
-    );
-    
-    // กำหนดกลยุทธ์โดยรวม
-    let recommendedStrategy = '';
-    if (overallThreat >= 8) {
-      recommendedStrategy = 'การแข่งขันสูงมาก ควรพิจารณาการร่วมทุนหรือการเป็นพันธมิตรกับบางบริษัท หรือเลือกโครงการอื่นที่มีการแข่งขันน้อยกว่า';
-    } else if (overallThreat >= 6) {
-      recommendedStrategy = 'เน้นจุดแข็งเฉพาะทางของบริษัทที่คู่แข่งไม่มี และนำเสนอราคาที่แข่งขันได้';
-    } else if (overallThreat >= 4) {
-      recommendedStrategy = 'นำเสนอแผนการดำเนินงานที่มีประสิทธิภาพและคุ้มค่า พร้อมเน้นย้ำประสบการณ์ในโครงการที่คล้ายกัน';
-    } else {
-      recommendedStrategy = 'มีโอกาสชนะสูง ควรนำเสนอราคาที่สมเหตุสมผลพร้อมคุณภาพและการดูแลหลังการขายที่ดี';
-    }
-    
-    return {
-      competitorAnalysis,
-      overallThreat,
-      recommendedStrategy,
+
+    return llmResponse.output() || {
+      competitorAnalysis: [],
+      overallThreat: 0,
+      recommendedStrategy: 'ไม่สามารถวิเคราะห์ข้อมูลได้',
     };
   }
 );
 
 /**
- * ค้นหาโครงการที่เหมาะสมแบบขั้นสูง
- * เครื่องมือนี้ช่วยค้นหาและจัดลำดับโครงการที่เหมาะสมกับความสามารถของบริษัท
- * และมีโอกาสชนะสูง
+ * ค้นหาโครงการที่เหมาะสมแบบขั้นสูง (ปรับปรุงใหม่)
+ * ใช้ LLM ในการขยายความและแนะนำคำค้นหาเพิ่มเติมเพื่อเพิ่มโอกาสในการเจอโครงการที่ตรงความต้องการ
  */
 export const searchAdvancedProjects = procurementAI.defineTool(
   {
     name: 'searchAdvancedProjects',
-    description: 'ค้นหาโครงการที่เหมาะสมแบบขั้นสูง',
+    description: 'ค้นหาโครงการที่เหมาะสมแบบขั้นสูง (ปรับปรุงใหม่)',
     inputSchema: z.object({
       query: z.string().describe('คำค้นหาโครงการ'),
       companyExpertise: z.array(z.string()).describe('ความเชี่ยวชาญของบริษัท'),
@@ -211,9 +196,10 @@ export const searchAdvancedProjects = procurementAI.defineTool(
       geographicPreference: z.array(z.string()).optional().describe('พื้นที่ทางภูมิศาสตร์ที่สนใจ'),
     }),
     outputSchema: z.object({
-      enhancedQuery: z.string().describe('คำค้นหาที่ปรับปรุงแล้ว'),
+      enhancedQuery: z.string().describe('คำค้นหาที่ปรับปรุงแล้วสำหรับใช้แสดงผล'),
       searchParams: z.object({
-        keywords: z.array(z.string()).describe('คำสำคัญที่สกัดได้'),
+        keywords: z.array(z.string()).describe('คำสำคัญหลักที่สกัดได้'),
+        suggestedKeywords: z.array(z.string()).describe('คำสำคัญเพิ่มเติมที่ AI แนะนำ'),
         filters: z.array(z.object({
           field: z.string().describe('ชื่อฟิลด์'),
           value: z.string().describe('ค่าที่ใช้กรอง'),
@@ -222,71 +208,67 @@ export const searchAdvancedProjects = procurementAI.defineTool(
     }),
   },
   async ({ query, companyExpertise, preferredBudgetRange, preferredProjectTypes, geographicPreference }) => {
-    // สกัดคำสำคัญจากคำค้นหา
-    const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
-    
-    // เพิ่มคำความเชี่ยวชาญเข้าไปในคำสำคัญ
-    const expertiseKeywords = companyExpertise.flatMap(exp => 
-      exp.toLowerCase().split(' ').filter(word => word.length > 2)
-    );
-    
-    // สร้างคำค้นหาที่ปรับปรุงแล้ว
-    let enhancedQuery = query;
-    
-    // เพิ่มความเชี่ยวชาญที่เกี่ยวข้องเข้าไปในคำค้นหา
-    const relevantExpertise = companyExpertise.filter(exp => 
-      keywords.some(keyword => exp.toLowerCase().includes(keyword))
-    );
-    
-    if (relevantExpertise.length > 0) {
-      enhancedQuery += ` เกี่ยวกับ ${relevantExpertise.join(' ')}`;
-    }
-    
-    // เพิ่มช่วงงบประมาณ
-    if (preferredBudgetRange.min && preferredBudgetRange.max) {
-      enhancedQuery += ` งบประมาณระหว่าง ${preferredBudgetRange.min.toLocaleString()} ถึง ${preferredBudgetRange.max.toLocaleString()} บาท`;
-    } else if (preferredBudgetRange.min) {
-      enhancedQuery += ` งบประมาณมากกว่า ${preferredBudgetRange.min.toLocaleString()} บาท`;
-    } else if (preferredBudgetRange.max) {
-      enhancedQuery += ` งบประมาณไม่เกิน ${preferredBudgetRange.max.toLocaleString()} บาท`;
-    }
-    
-    // เพิ่มประเภทโครงการ
-    if (preferredProjectTypes && preferredProjectTypes.length > 0) {
-      enhancedQuery += ` ประเภท ${preferredProjectTypes.join(' หรือ ')}`;
-    }
-    
-    // เพิ่มพื้นที่ทางภูมิศาสตร์
-    if (geographicPreference && geographicPreference.length > 0) {
-      enhancedQuery += ` ใน${geographicPreference.join(' หรือ ')}`;
-    }
-    
-    // สร้างตัวกรอง
-    const filters = [];
-    
-    if (preferredProjectTypes && preferredProjectTypes.length > 0) {
-      filters.push({
-        field: 'type',
-        value: preferredProjectTypes.join(','),
-      });
-    }
-    
-    if (geographicPreference && geographicPreference.length > 0) {
-      filters.push({
-        field: 'address',
-        value: geographicPreference.join(','),
-      });
-    }
-    
-    // รวมคำสำคัญทั้งหมด
-    const allKeywords = [...new Set([...keywords, ...expertiseKeywords])];
-    
-    return {
-      enhancedQuery,
-      searchParams: {
-        keywords: allKeywords,
-        filters,
+    const prompt = `
+      ในฐานะผู้เชี่ยวชาญด้านการค้นหาข้อมูล, โปรดปรับปรุงและขยายความคำค้นหาโครงการเพื่อให้ได้ผลลัพธ์ที่ดีที่สุด
+
+      **ข้อมูลจากผู้ใช้:**
+      - **คำค้นหา:** "${query}"
+      - **ความเชี่ยวชาญบริษัท:** ${companyExpertise.join(', ')}
+      - **งบประมาณ:** ${preferredBudgetRange.min ? `ตั้งแต่ ${preferredBudgetRange.min.toLocaleString()} บาท` : ''} ${preferredBudgetRange.max ? `ถึง ${preferredBudgetRange.max.toLocaleString()} บาท` : ''}
+      - **ประเภทโครงการ:** ${preferredProjectTypes?.join(', ') || 'ไม่ระบุ'}
+      - **พื้นที่:** ${geographicPreference?.join(', ') || 'ไม่ระบุ'}
+
+      **ดำเนินการดังนี้:**
+      1.  **สกัดคำสำคัญหลัก (Keywords):** จากคำค้นหาและความเชี่ยวชาญ
+      2.  **แนะนำคำสำคัญเพิ่มเติม (Suggested Keywords):** แนะนำคำค้นหาที่เกี่ยวข้องหรือคำที่มีความหมายใกล้เคียงกับความเชี่ยวชาญ เพื่อขยายขอบเขตการค้นหา
+      3.  **สร้างคำค้นหาที่ปรับปรุงแล้ว (Enhanced Query):** สร้างประโยคคำค้นหาที่สมบูรณ์สำหรับแสดงผล
+      4.  **สร้างตัวกรอง (Filters):** สำหรับใช้กับระบบค้นหา
+
+      โปรดตอบกลับในรูปแบบ JSON ที่ตรงกับ outputSchema เท่านั้น
+    `;
+
+    const llmResponse = await generate({
+      model: procurementAI,
+      prompt: prompt,
+      output: {
+        format: 'json',
+        schema: z.object({
+          enhancedQuery: z.string(),
+          searchParams: z.object({
+            keywords: z.array(z.string()),
+            suggestedKeywords: z.array(z.string()),
+            filters: z.array(z.object({
+              field: z.string(),
+              value: z.string(),
+            })),
+          }),
+        }),
       },
-    };
+    });
+
+    // Fallback ในกรณีที่ LLM ไม่สามารถสร้างผลลัพธ์ได้
+    if (!llmResponse.output()) {
+      const keywords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+      const expertiseKeywords = companyExpertise.flatMap(exp => exp.toLowerCase().split(' '));
+      const allKeywords = [...new Set([...keywords, ...expertiseKeywords])];
+      const filters = [];
+      if (preferredProjectTypes && preferredProjectTypes.length > 0) {
+        filters.push({ field: 'type', value: preferredProjectTypes.join(',') });
+      }
+      if (geographicPreference && geographicPreference.length > 0) {
+        filters.push({ field: 'address', value: geographicPreference.join(',') });
+      }
+      return {
+        enhancedQuery: query,
+        searchParams: {
+          keywords: allKeywords,
+          suggestedKeywords: [],
+          filters,
+        },
+      };
+    }
+
+    return llmResponse.output();
   }
 );
+''

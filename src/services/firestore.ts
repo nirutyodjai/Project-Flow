@@ -15,7 +15,9 @@ import {
   Query,
   query,
   orderBy,
-  where
+  where,
+  limit,
+  setDoc
 } from 'firebase/firestore';
 import type { Project, Contact } from './mock-data';
 
@@ -56,6 +58,7 @@ const mapDocToProject = (doc: DocumentData): Project => ({
     contactPerson: doc.data().contactPerson || null,
     phone: doc.data().phone || null,
     documentUrl: doc.data().documentUrl || null,
+    bidSubmissionDeadline: doc.data().bidSubmissionDeadline || null,
 });
 
 const mapDocToContact = (doc: DocumentData): Contact => ({
@@ -128,7 +131,7 @@ export async function listProjects(args: { query?: string | null }): Promise<Pro
  * Fetches all contacts from Firestore.
  * @returns A promise that resolves to an array of contacts.
  */
-export async function listContacts(): Promise<Contact[] | null> {
+export async function listContacts(): Promise<Contact[]> {
     console.log('Fetching all contacts from Firestore');
     try {
         const db = getDb();

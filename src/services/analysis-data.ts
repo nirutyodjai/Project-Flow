@@ -6,7 +6,9 @@
 'use server';
 
 import { getDb } from './firebase';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
+import { z } from 'zod';
+import { FinalAnalysisOutputSchema, MaterialSpecificationSchema } from '@/ai/flows/summarize-document-flow';
 
 /**
  * ประเภทข้อมูลสำหรับการวิเคราะห์โครงการ
@@ -359,7 +361,7 @@ export async function getAnalysisData(
     const db = getDb();
     if (!db) {
       console.warn('Firestore not initialized, fetching from local cache instead');
-      return getAnalysisFromLocalCache(type, filter, limit);
+      return findAnalysesInLocalCache(filter.keywords || [], type, limit);
     }
 
     const marketAnalysesCol = collection(db, 'marketAnalyses');
@@ -379,7 +381,7 @@ export async function getAnalysisData(
     
     if (analysisSnapshot.empty) {
       console.log(`No ${type} analysis found with filter:`, filter);
-      return getAnalysisFromLocalCache(type, filter, limit);
+      return findAnalysesInLocalCache(filter.keywords || [], type, limit);
     }
 
     // ดึงข้อมูลและจำกัดจำนวนตาม limit
@@ -391,121 +393,14 @@ export async function getAnalysisData(
     return results;
   } catch (error) {
     console.error(`Error getting ${type} analysis:`, error);
-    return getAnalysisFromLocalCache(type, filter, limit);
+    return findAnalysesInLocalCache(filter.keywords || [], type, limit);
   }
 }
 
 /**
  * ดึงข้อมูลการวิเคราะห์จากแคชท้องถิ่น
  */
-export function getAnalysisFromLocalCache(
-  type: 'stock' | 'market' | 'news',
-  filter: Record<string, any> = {},
-  limit: number = 5
-): MarketAnalysisData[] {
-  try {
-    // สร้าง key สำหรับการค้นหาในแคช
-    let key = type;
-    
-    if (filter.ticker || filter.symbol) {
-      key += `_${filter.ticker || filter.symbol}`;
-    } else if (filter.market) {
-      key += `_${filter.market}`;
-    }
-    
-    const allCacheEntries = Array.from(localMarketAnalysisCache.entries())
-      .filter(([cacheKey]) => cacheKey.startsWith(type))
-      .flatMap(([, values]) => values);
-    
-    // กรองตามเงื่อนไข
-    const filtered = allCacheEntries.filter(entry => {
-      for (const key in filter) {
-        if (entry.data[key] !== filter[key]) {
-          return false;
-        }
-      }
-      return true;
-    });
-    
-    // เรียงลำดับตามเวลาและจำกัดจำนวน
-    return filtered
-      .sort((a, b) => b.analysisTimestamp.getTime() - a.analysisTimestamp.getTime())
-      .slice(0, limit);
-  } catch (error) {
-    console.error(`Error getting ${type} analysis from local cache:`, error);
-    return [];
-  }
-}
-
-/**
- * ค้นหาการวิเคราะห์ตลาดตามคีย์เวิร์ด
- */
-export async function findMarketAnalysesByKeywords(
-  keywords: string[],
-  type?: 'stock' | 'market' | 'news',
-  limit: number = 5
-): Promise<MarketAnalysisData[]> {
-  try {
-    const db = getDb();
-    if (!db) {
-      console.warn('Firestore not initialized, searching in local cache instead');
-      return findAnalysesInLocalCache(keywords, type, limit);
-    }
-
-    const marketAnalysesCol = collection(db, 'marketAnalyses');
-    let q = query(marketAnalysesCol, orderBy('analysisTimestamp', 'desc'));
-    
-    // เพิ่มเงื่อนไขสำหรับประเภทการวิเคราะห์ (ถ้ามี)
-    if (type) {
-      q = query(q, where('type', '==', type));
-    }
-
-    const analysisSnapshot = await getDocs(q);
-    
-    if (analysisSnapshot.empty) {
-      return [];
-    }
-
-    // ดึงทุกรายการและกรองด้วยคีย์เวิร์ด
-    const analyses = analysisSnapshot.docs.map(doc => doc.data() as MarketAnalysisData);
-    
-    // คำนวณความเกี่ยวข้องกับคีย์เวิร์ดที่ให้มา
-    const scoredAnalyses = analyses.map(analysis => {
-      // นับจำนวนคีย์เวิร์ดที่ตรงกัน
-      const matchCount = keywords.reduce((count, keyword) => {
-        const keywordLower = keyword.toLowerCase();
-        return count + (analysis.keywords.some(k => 
-          k.toLowerCase().includes(keywordLower) || keywordLower.includes(k.toLowerCase())
-        ) ? 1 : 0);
-      }, 0);
-      
-      return {
-        analysis,
-        relevanceScore: matchCount / keywords.length
-      };
-    });
-    
-    // เรียงลำดับตามความเกี่ยวข้อง
-    scoredAnalyses.sort((a, b) => b.relevanceScore - a.relevanceScore);
-    
-    // ดึงเฉพาะรายการที่มีความเกี่ยวข้องและจำกัดจำนวน
-    const result = scoredAnalyses
-      .filter(item => item.relevanceScore > 0)
-      .slice(0, limit)
-      .map(item => item.analysis);
-    
-    console.log(`Found ${result.length} analyses matching keywords: ${keywords.join(', ')}`);
-    return result;
-  } catch (error) {
-    console.error('Error finding analyses by keywords:', error);
-    return findAnalysesInLocalCache(keywords, type, limit);
-  }
-}
-
-/**
- * ค้นหาการวิเคราะห์ตลาดจากแคชท้องถิ่นตามคีย์เวิร์ด
- */
-function findAnalysesInLocalCache(
+export function findAnalysesInLocalCache(
   keywords: string[],
   type?: 'stock' | 'market' | 'news',
   limit: number = 5
@@ -540,11 +435,11 @@ function findAnalysesInLocalCache(
     // เรียงลำดับและกรอง
     return scoredEntries
       .filter(item => item.score > 0)
-      .sort((a, b) => b.score - a.score)
+      .sort((a, b) => b.entry.analysisTimestamp.getTime() - a.entry.analysisTimestamp.getTime())
       .slice(0, limit)
-      .map(item => item.entry);
+      .map(item => item.entry); // Return only the MarketAnalysisData objects
   } catch (error) {
-    console.error('Error finding analyses in local cache:', error);
+    console.error(`Error finding analyses in local cache:`, error);
     return [];
   }
 }
@@ -577,6 +472,12 @@ export async function getRecentMarketAnalysis(market: string): Promise<any | nul
  * ดึงข้อมูลการวิเคราะห์ข่าวการเงินที่เกี่ยวข้องล่าสุด
  * @param keyword คำค้นสำหรับค้นหาข่าวที่เกี่ยวข้อง
  */
+export async function findMarketAnalysesByKeywords(keywords: string[], type: string, limit: number): Promise<any[]> {
+  // Placeholder implementation
+  console.warn("findMarketAnalysesByKeywords is a placeholder and needs proper implementation.");
+  return [];
+}
+
 export async function getRecentNewsAnalysis(keyword: string): Promise<any | null> {
   // ใช้ findMarketAnalysesByKeywords เพื่อค้นหาข่าวที่เกี่ยวข้อง
   const results = await findMarketAnalysesByKeywords([keyword], 'news', 1);
@@ -595,7 +496,7 @@ export async function saveStockAnalysis(analysisData: any): Promise<boolean> {
   const keywords = [
     ticker,
     analysisData.trend,
-    ...analysisData.keyFactors?.slice(0, 3) || []
+    ...(analysisData.keyFactors?.slice(0, 3) || [])
   ];
   
   return await saveAnalysisData('stock', analysisData, keywords);
@@ -609,7 +510,7 @@ export async function saveMarketAnalysis(analysisData: any): Promise<boolean> {
   const keywords = [
     analysisData.market,
     analysisData.trend,
-    ...analysisData.sectorOutlook?.slice(0, 3).map((s: any) => s.sector) || []
+    ...(analysisData.sectorOutlook?.slice(0, 3).map((s: any) => s.sector) || [])
   ];
   
   return await saveAnalysisData('market', analysisData, keywords);
@@ -623,8 +524,7 @@ export async function saveNewsAnalysis(analysisData: any): Promise<boolean> {
   const keywords = [
     analysisData.headline?.substring(0, 50) || "",
     analysisData.marketImpact,
-    ...analysisData.affectedSectors || [],
-    ...analysisData.relatedTickers || []
+    ...(analysisData.affectedSectors || [])
   ];
   
   return await saveAnalysisData('news', analysisData, keywords);
@@ -656,6 +556,10 @@ export interface MarketTrendAnalysisData {
 export async function saveMarketTrendAnalysis(analysis: MarketTrendAnalysisData): Promise<boolean> {
   try {
     const db = getDb();
+    if (!db) {
+      console.error('Error saving market trend analysis: Firestore not initialized');
+      return false;
+    }
     const docId = analysis.id || `${analysis.period}_${analysis.type}_${analysis.date}`;
     const docRef = doc(db, 'marketTrends', docId);
     
@@ -686,12 +590,16 @@ export async function getLatestMarketTrendAnalysis(
 ): Promise<MarketTrendAnalysisData | null> {
   try {
     const db = getDb();
+    if (!db) {
+      console.error('Error getting latest market trend analysis: Firestore not initialized');
+      return null;
+    }
     const q = query(
       collection(db, 'marketTrends'),
       where('period', '==', period),
       where('type', '==', type),
       orderBy('date', 'desc'),
-      // limit to 1 document
+      limit(1)
     );
     
     const querySnapshot = await getDocs(q);
@@ -724,6 +632,10 @@ export async function searchMarketTrendAnalysis(
 ): Promise<MarketTrendAnalysisData[]> {
   try {
     const db = getDb();
+    if (!db) {
+      console.error('Error searching market trend analysis: Firestore not initialized');
+      return [];
+    }
     let q = query(collection(db, 'marketTrends'));
     
     // Add filters if provided
@@ -751,6 +663,166 @@ export async function searchMarketTrendAnalysis(
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MarketTrendAnalysisData));
   } catch (error) {
     console.error('Error searching market trend analysis:', error);
+    return [];
+  }
+}
+
+/**
+ * =================================================================
+ * NEW: Document Analysis Service Functions
+ * =================================================================
+ */
+
+/**
+ * Schema for storing document analysis results in Firestore.
+ * It extends the AI flow's output schema with database-specific fields.
+ */
+export const DocumentAnalysisDBSchema = FinalAnalysisOutputSchema.extend({
+  id: z.string(),
+  sourceType: z.enum(['url', 'text', 'file']),
+  sourceContent: z.string().describe('URL, text snippet, or original file name'),
+  downloadUrl: z.string().optional().describe('Public URL for file downloads, if applicable'),
+  createdAt: z.string().describe('ISO 8601 timestamp'),
+});
+
+export type DocumentAnalysisData = z.infer<typeof DocumentAnalysisDBSchema>;
+
+/**
+ * Saves the result of a document analysis to the 'documentAnalyses' collection in Firestore.
+ *
+ * @param analysisResult The analysis data from the AI flow.
+ * @param source The original source information (URL, text, or file details).
+ * @returns The ID of the newly created document, or null if an error occurred.
+ */
+export async function saveDocumentAnalysis(
+  analysisResult: z.infer<typeof FinalAnalysisOutputSchema>,
+  source: {
+    sourceType: 'url' | 'text' | 'file';
+    content: string;
+    downloadUrl?: string;
+  }
+): Promise<string | null> {
+  try {
+    const db = getDb();
+    if (!db) {
+      console.warn('Firestore not initialized');
+      return null;
+    }
+
+    const timestamp = new Date();
+    // Create a URL-safe, short, and descriptive ID
+    const safeProjectName = (analysisResult.projectName || 'Untitled')
+      .replace(/[^a-zA-Z0-9-]/g, '_')
+      .substring(0, 50);
+    const id = `${safeProjectName}_${timestamp.getTime()}`;
+
+    const dataToSave: DocumentAnalysisData = {
+      id,
+      ...analysisResult,
+      sourceType: source.sourceType,
+      // For text, store a snippet. For URL/file, store the full URL or file name.
+      sourceContent: source.sourceType === 'text' ? source.content.substring(0, 250) + (source.content.length > 250 ? '...' : '') : source.content,
+      downloadUrl: source.downloadUrl,
+      createdAt: timestamp.toISOString(),
+    };
+
+    // Validate data with Zod before saving
+    DocumentAnalysisDBSchema.parse(dataToSave);
+
+    await setDoc(doc(db, 'documentAnalyses', id), dataToSave);
+    console.log(`Saved document analysis with ID: ${id}`);
+    return id;
+  } catch (error) {
+    console.error('Error saving document analysis:', error);
+    // If Zod validation fails, the error will be caught here.
+    return null;
+  }
+}
+
+/**
+ * =================================================================
+ * NEW: TOR Material Specifications History Functions
+ * =================================================================
+ */
+
+// Re-export MaterialSpecificationSchema from summarize-document-flow for consistency
+export type TorMaterialSpecification = z.infer<typeof MaterialSpecificationSchema>;
+
+/**
+ * Saves extracted material specifications from a TOR to a historical collection.
+ * @param torAnalysisId A unique ID for this specific TOR analysis (e.g., from summarizeDocumentFlow).
+ * @param materials An array of MaterialSpecificationSchema objects.
+ * @returns True if successful, false otherwise.
+ */
+export async function saveTorMaterialSpecifications(
+  torAnalysisId: string,
+  materials: TorMaterialSpecification[]
+): Promise<boolean> {
+  try {
+    const db = getDb();
+    if (!db) {
+      console.warn('Firestore not initialized');
+      return false;
+    }
+
+    const batch = [];
+    const collectionRef = collection(db, 'torMaterialHistory');
+
+    for (const material of materials) {
+      const docId = `${torAnalysisId}_${material.itemName.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 30)}_${Date.now()}`;
+      batch.push(setDoc(doc(collectionRef, docId), {
+        torAnalysisId,
+        ...material,
+        createdAt: new Date().toISOString(),
+      }));
+    }
+
+    await Promise.all(batch);
+    console.log(`Saved ${materials.length} material specifications for TOR analysis ID: ${torAnalysisId}`);
+    return true;
+  } catch (error) {
+    console.error('Error saving TOR material specifications:', error);
+    return false;
+  }
+}
+
+/**
+ * Retrieves historical material specifications for a given item name and optional agency.
+ * This can be used to detect common patterns or potential vendor locks.
+ * @param itemName The name of the material or equipment to search for.
+ * @param agencyName Optional: The name of the government agency or organization.
+ * @param limit Optional: Maximum number of historical records to return. Defaults to 10.
+ * @returns An array of historical TorMaterialSpecification objects.
+ */
+export async function getHistoricalTorMaterialSpecs(
+  itemName: string,
+  agencyName?: string,
+  limit: number = 10
+): Promise<TorMaterialSpecification[]> {
+  try {
+    const db = getDb();
+    if (!db) {
+      console.warn('Firestore not initialized');
+      return [];
+    }
+
+    let q = query(
+      collection(db, 'torMaterialHistory'),
+      where('itemName', '==', itemName),
+      orderBy('createdAt', 'desc'),
+      limit(limit)
+    );
+
+    // If agencyName is provided, filter by it (assuming we can link TORs to agencies)
+    // This would require adding agencyName to the saved TorMaterialSpecification in saveTorMaterialSpecifications
+    // For now, we'll keep it simple and just filter by itemName.
+    // In a real-world scenario, you'd likely have a 'torId' linked to a 'projectId' which has an 'agencyName'.
+    // For demonstration, we'll just use itemName.
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as TorMaterialSpecification);
+  } catch (error) {
+    console.error('Error getting historical TOR material specifications:', error);
     return [];
   }
 }

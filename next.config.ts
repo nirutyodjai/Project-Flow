@@ -2,8 +2,9 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'export',
-  distDir: 'out',
+  // Removing output: 'export' to enable server-side rendering
+  // Keeping default .next directory for build output
+  // distDir: 'out', 
   trailingSlash: false,
   skipTrailingSlashRedirect: true,
   basePath: '',
@@ -15,7 +16,6 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

@@ -11,6 +11,7 @@ export type Project = {
     contactPerson: string | null;
     phone: string | null;
     documentUrl: string | null;
+    bidSubmissionDeadline: string | null; // NEW: Added bidSubmissionDeadline
 };
 
 export type Contact = {
