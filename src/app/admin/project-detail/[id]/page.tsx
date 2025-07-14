@@ -1,3 +1,15 @@
+// Generate static params for static export
+export async function generateStaticParams() {
+  // Return a list of possible project IDs for static generation
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+  ];
+}
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Calendar, CalendarClock, Edit2, LucideCheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { logger } from '@/lib/logger';
 
 export default function ProjectDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -24,7 +37,7 @@ export default function ProjectDetailPage({ params }: { params: { id: string } }
         const projectData = await getAdminProject(params.id);
         setProject(projectData);
       } catch (error) {
-        console.error('Failed to fetch project:', error);
+        logger.error('Failed to fetch project:', error);
         setError('ไม่สามารถโหลดข้อมูลโครงการได้');
       } finally {
         setLoading(false);

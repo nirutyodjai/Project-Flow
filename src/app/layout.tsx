@@ -1,7 +1,7 @@
 
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from "@/components/theme-provider";
-import { belleza, alegreya } from "@/lib/fonts";
+import { inter } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { AppLayout } from "@/components/layout/app-layout-client";
 import { Toaster } from "@/components/ui/toaster";
@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="th" className={cn(belleza.variable, alegreya.variable)} suppressHydrationWarning>
+    <html lang="th" className={cn(inter.variable)} suppressHydrationWarning>
       <body className="font-body antialiased">
         <ThemeProvider
           attribute="class"

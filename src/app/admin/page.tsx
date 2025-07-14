@@ -34,13 +34,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Download, FileSpreadsheet, Filter, Plus, SquarePen, Trash2, Loader2, Search, SlidersHorizontal, RefreshCw, Eye } from 'lucide-react';
+import { CalendarIcon, Download, FileSpreadsheet, Filter, Plus, SquarePen, Trash2, Loader2, Search, SlidersHorizontal, RefreshCw, Eye, Database } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { addAdminProject, updateAdminProject, deleteAdminProject, listAdminProjects, addTask, updateTask, deleteTask, listTasks } from '@/services/firestore';
 import { AdminProject, Task } from '@/services/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { format } from "date-fns";
+import { logger } from '@/lib/logger';
 
 export default function AdminPage() {
     const router = useRouter();
@@ -116,7 +117,7 @@ export default function AdminPage() {
             const projectList = await listAdminProjects();
             setProjects(projectList);
         } catch (error) {
-            console.error('Failed to load projects:', error);
+            logger.error('Failed to load projects:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to load projects. Please try again.',
@@ -134,7 +135,7 @@ export default function AdminPage() {
             const taskList = await listTasks();
             setTasks(taskList);
         } catch (error) {
-            console.error('Failed to load tasks:', error);
+            logger.error('Failed to load tasks:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to load tasks. Please try again.',
@@ -155,7 +156,7 @@ export default function AdminPage() {
                 description: 'Project deleted successfully',
             });
         } catch (error) {
-            console.error('Failed to delete project:', error);
+            logger.error('Failed to delete project:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to delete project. Please try again.',
@@ -174,7 +175,7 @@ export default function AdminPage() {
                 description: 'Task deleted successfully',
             });
         } catch (error) {
-            console.error('Failed to delete task:', error);
+            logger.error('Failed to delete task:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to delete task. Please try again.',
@@ -253,7 +254,7 @@ export default function AdminPage() {
             setCurrentProject(null);
             setProjectDialogOpen(false);
         } catch (error) {
-            console.error('Failed to save project:', error);
+            logger.error('Failed to save project:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to save project. Please try again.',
@@ -316,7 +317,7 @@ export default function AdminPage() {
             setCurrentTask(null);
             setTaskDialogOpen(false);
         } catch (error) {
-            console.error('Failed to save task:', error);
+            logger.error('Failed to save task:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to save task. Please try again.',
@@ -349,7 +350,7 @@ export default function AdminPage() {
                     : t
             ));
         } catch (error) {
-            console.error('Failed to update task status:', error);
+            logger.error('Failed to update task status:', error);
             toast({
                 title: 'Error',
                 description: 'Failed to update task status. Please try again.',
@@ -484,7 +485,19 @@ export default function AdminPage() {
 
   return (
     <div className="h-full flex flex-col p-4 sm:p-6 lg:p-8 space-y-8 overflow-y-auto">
-      <h1 className="text-3xl font-headline font-bold">แผงควบคุมผู้ดูแล</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-headline font-bold">แผงควบคุมผู้ดูแล</h1>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => router.push('/admin/data-management')}
+            className="flex items-center gap-2"
+          >
+            <Database className="h-4 w-4" />
+            จัดการข้อมูล
+          </Button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-primary/10">

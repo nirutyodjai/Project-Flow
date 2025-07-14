@@ -1,3 +1,15 @@
+// Generate static params for static export
+export async function generateStaticParams() {
+  // Return a list of possible task IDs for static generation
+  return [
+    { id: '1' },
+    { id: '2' },
+    { id: '3' },
+    { id: '4' },
+    { id: '5' },
+  ];
+}
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,6 +24,7 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 export default function TaskDetailPage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -28,7 +41,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
         const taskData = await getTask(params.id);
         setTask(taskData);
       } catch (error) {
-        console.error('Failed to fetch task:', error);
+        logger.error('Failed to fetch task:', error);
         setError('ไม่สามารถโหลดข้อมูลงานได้');
       } finally {
         setLoading(false);
@@ -65,7 +78,7 @@ export default function TaskDetailPage({ params }: { params: { id: string } }) {
         description: updatedTask.checked ? 'ทำเครื่องหมายงานเป็นเสร็จสิ้นแล้ว' : 'ทำเครื่องหมายงานเป็นยังไม่เสร็จสิ้นแล้ว'
       });
     } catch (error) {
-      console.error('Failed to update task status:', error);
+      logger.error('Failed to update task status:', error);
       toast({
         title: 'Error',
         description: 'Failed to update task status. Please try again.',

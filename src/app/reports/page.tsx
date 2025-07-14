@@ -17,6 +17,7 @@ import { listAdminProjects, listTasks } from '@/services/firestore';
 import { format, subDays, isBefore, isAfter, parseISO } from 'date-fns';
 import { th } from 'date-fns/locale';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { logger } from '@/lib/logger';
 
 export default function ReportsPage() {
   const router = useRouter();
@@ -42,7 +43,7 @@ export default function ReportsPage() {
         setProjects(projectList);
         setTasks(taskList);
       } catch (error) {
-        console.error('Failed to load data:', error);
+        logger.error('Failed to load data:', error);
       } finally {
         setIsLoading(false);
       }

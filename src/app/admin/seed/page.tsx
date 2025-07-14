@@ -7,6 +7,7 @@ import { getDb } from '@/services/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 export default function SeedPage() {
   const [loading, setLoading] = useState(false);
@@ -126,7 +127,7 @@ export default function SeedPage() {
         description: 'Database seeded with initial data successfully!',
       });
     } catch (error) {
-      console.error('Error seeding database:', error);
+      logger.error('Error seeding database:', error);
       toast({
         title: 'Error',
         description: 'Failed to seed database. See console for details.',

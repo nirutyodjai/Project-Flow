@@ -8,6 +8,7 @@ import {
     createUserWithEmailAndPassword,
     signOut,
 } from 'firebase/auth';
+import { logger } from '@/lib/logger';
 import { getFirebaseAuth } from './firebase';
 
 const NOT_CONFIGURED_MESSAGE = 'Firebase is not configured. Please check your .env file.';
@@ -30,7 +31,7 @@ export async function login(prevState: { message: string } | undefined, formData
     if (e instanceof Error && 'code' in e && e.code === 'auth/invalid-credential') {
       return { message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' };
     }
-    console.error(e);
+    logger.error('Login error:', e, 'Auth');
     return { message: 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ' };
   }
 
@@ -60,7 +61,7 @@ export async function signup(prevState: { message: string } | undefined, formDat
      if (e instanceof Error && 'code' in e && e.code === 'auth/email-already-in-use') {
         return { message: 'อีเมลนี้ถูกใช้งานแล้ว' };
     }
-    console.error(e);
+    logger.error('Signup error:', e, 'Auth');
     return { message: 'เกิดข้อผิดพลาดในการสมัครใช้งาน' };
   }
   
@@ -71,12 +72,12 @@ export async function signup(prevState: { message: string } | undefined, formDat
 export async function logout() {
     const auth = getFirebaseAuth();
     if (!auth) {
-      console.warn(NOT_CONFIGURED_MESSAGE);
+      logger.warn(NOT_CONFIGURED_MESSAGE, undefined, 'Auth');
     } else {
         try {
             await signOut(auth);
         } catch (e) {
-            console.warn("Could not sign out: " + (e as Error).message);
+            logger.warn("Could not sign out: " + (e as Error).message, undefined, 'Auth');
         }
     }
     revalidatePath('/');

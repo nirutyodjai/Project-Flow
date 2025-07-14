@@ -1,0 +1,9 @@
+specVersion: "v1alpha"
+serviceId: "project-comdee-dataconnect"
+location: "asia-east1"
+schema:
+  source: "./schema"
+  datasource:
+    postgresql:
+      database: "project-comdee-db"
+connectorDirs: ["./connector"]

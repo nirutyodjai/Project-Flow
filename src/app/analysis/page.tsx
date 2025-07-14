@@ -24,6 +24,7 @@ import {
     AnalyzedBiddingDocumentOutput 
 } from '@/ai/flows/analyze-bidding-document';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { logger } from '@/lib/logger';
 
 // Helper function to convert file to data URI
 const fileToDataUri = (file: File): Promise<string> => {
@@ -85,7 +86,7 @@ export default function AnalysisPage() {
             const result = await analyzeBiddingDocument({ imageDataUri });
             setAnalysisResult(result);
         } catch (e) {
-            console.error(e);
+            logger.error('Error occurred', e);
             setError('เกิดข้อผิดพลาดในการวิเคราะห์เอกสาร กรุณาลองใหม่อีกครั้ง');
         } finally {
             setIsLoading(false);

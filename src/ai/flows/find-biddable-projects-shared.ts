@@ -13,6 +13,7 @@ export const BiddableProjectSchema = z.object({
   contactPerson: z.string().nullable().describe('บุคคลที่สามารถติดต่อได้'),
   phone: z.string().nullable().describe('เบอร์โทรศัพท์ติดต่อ'),
   documentUrl: z.string().nullable().describe('URL สำหรับดาวน์โหลดเอกสารโครงการ'),
+  bidSubmissionDeadline: z.string().nullable().describe('วันที่และเวลาสิ้นสุดการยื่นซองประมูล (ISO 8601 format)'),
 
   // AI-generated analysis
   analysis: z.string().describe('บทวิเคราะห์สั้นๆ ว่าทำไมโครงการนี้จึงน่าสนใจสำหรับบริษัท'),

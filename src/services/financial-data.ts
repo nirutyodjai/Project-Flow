@@ -1,4 +1,5 @@
 'use server';
+import { logger } from '@/lib/logger';
 /**
  * @fileOverview A mock service for fetching financial data.
  */
@@ -10,7 +11,7 @@
  * @returns {Promise<number>} A promise that resolves to the mock stock price.
  */
 export async function getStockPrice(ticker: string): Promise<number> {
-  console.log(`Fetching mock stock price for ${ticker}`);
+  logger.debug(`Fetching mock stock price for ${ticker}`, undefined, 'FinancialData');
   // Simulate API call with a random price
   const mockPrice = Math.random() * 200 + 50; // Random price between 50 and 250
   return Promise.resolve(parseFloat(mockPrice.toFixed(2)));
@@ -22,7 +23,7 @@ export async function getStockPrice(ticker: string): Promise<number> {
  * @returns {Promise<string[]>} A promise that resolves to an array of mock news headlines.
  */
 export async function getMarketNews(ticker: string): Promise<string[]> {
-    console.log(`Fetching mock market news for ${ticker}`);
+    logger.debug(`Fetching mock market news for ${ticker}`, undefined, 'FinancialData');
     const mockNews = [
         `ข่าวดี! บริษัท ${ticker} ประกาศผลประกอบการไตรมาสล่าสุดดีเกินคาด`,
         `นักวิเคราะห์ปรับเพิ่มเป้าหมายราคาหุ้น ${ticker} หลังเห็นแนวโน้มการเติบโต`,

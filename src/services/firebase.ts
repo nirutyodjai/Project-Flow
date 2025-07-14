@@ -1,6 +1,7 @@
 import { initializeApp, getApp, getApps, type FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getAuth, Auth } from "firebase/auth";
+import { logger } from '@/lib/logger';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -28,7 +29,7 @@ function getFirebaseApp(): FirebaseApp | null {
 
     if (getApps().length === 0) {
         if (!firebaseConfig.apiKey) {
-            console.warn("Firebase API Key is not set. Some features will be disabled.");
+            logger.warn("Firebase API Key is not set. Some features will be disabled.", undefined, 'Firebase');
             return null;
         }
         app = initializeApp(firebaseConfig);

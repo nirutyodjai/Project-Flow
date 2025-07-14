@@ -60,6 +60,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format, subDays, differenceInDays } from 'date-fns';
 import { th } from 'date-fns/locale';
 import './kpi-dashboard.css';
+import { logger } from '@/lib/logger';
 
 // ฟังก์ชั่นสำหรับแปลงฟอร์แมตวันที่
 function formatDate(dateString: string) {
@@ -107,7 +108,7 @@ export default function KPIDashboardPage() {
           setTasks(taskData);
         }
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        logger.error('Error fetching dashboard data:', error);
         toast({
           title: 'เกิดข้อผิดพลาด',
           description: 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง',

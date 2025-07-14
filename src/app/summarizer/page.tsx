@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { summarizeDocument } from '@/ai/flows/summarize-document-flow';
 import { textToSpeech } from '@/ai/flows/text-to-speech-flow';
 import { LoaderCircle, FileText, Upload, Volume2, X, Rocket } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 const SummarizerPage = () => {
   const [inputText, setInputText] = useState('');
@@ -72,7 +73,7 @@ const SummarizerPage = () => {
       }, 100);
 
     } catch (err) {
-      console.error(err);
+      logger.error('Error occurred', err);
       setError('เกิดข้อผิดพลาดในการสรุปเอกสาร โปรดลองอีกครั้ง');
     } finally {
       setLoading(false);

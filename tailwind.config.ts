@@ -9,8 +9,9 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        headline: ['var(--font-belleza)'],
-        body: ['var(--font-alegreya)'],
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        body: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

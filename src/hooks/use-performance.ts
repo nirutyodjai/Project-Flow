@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { logger } from '@/lib/logger';
 
 // Interface for performance metrics
 interface PerformanceMetrics {
@@ -71,7 +72,7 @@ export function usePerformance(): PerformanceMetrics {
           }
         }
       } catch (error) {
-        console.error('Error measuring memory:', error);
+        logger.error('Error measuring memory:', error, 'Performance');
       }
     };
 

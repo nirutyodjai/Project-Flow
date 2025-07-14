@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { predictStockTrend, PredictStockTrendOutput } from '@/ai/flows/predict-stock-trend';
 import { Bot, User, TrendingUp, TrendingDown, LoaderCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 
 type PredictionHistory = PredictStockTrendOutput & { winner: 'ai' | 'user' };
 
@@ -31,7 +32,7 @@ const TradingGamePage = () => {
             setPrediction(newPrediction);
             setHistory(prev => [newPrediction, ...prev]);
         } catch (e) {
-            console.error(e);
+            logger.error('Error occurred', e);
             setError('เกิดข้อผิดพลาดในการวิเคราะห์ โปรดลองอีกครั้ง');
         }
         setLoading(false);
