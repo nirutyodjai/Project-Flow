@@ -1,4 +1,4 @@
-'''''''use client';
+
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, UploadCloud, FileText, Building, Users, Swords, BrainCircuit, ThumbsUp, ThumbsDown, Target, BarChart, Sparkles, AlertTriangle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -259,5 +259,3 @@ export default function BiddingAdvisorPage() {
         </div>
     );
 }
-'''
-'''

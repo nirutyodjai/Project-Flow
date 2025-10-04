@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test Client</h1>
+    <ul id='messages'></ul>
+    <script>
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        ws.onopen = function(event) {
+            console.log("WebSocket connection established.");
+            const item = document.createElement('li');
+            item.textContent = "Connection established!";
+            document.getElementById('messages').appendChild(item);
+        };
+
+        ws.onmessage = function(event) {
+            console.log("Message from server: ", event.data);
+            const item = document.createElement('li');
+            item.textContent = event.data;
+            document.getElementById('messages').appendChild(item);
+        };
+
+        ws.onclose = function(event) {
+            console.log("WebSocket connection closed.");
+            const item = document.createElement('li');
+            item.style.color = 'red';
+            item.textContent = "Connection closed.";
+            document.getElementById('messages').appendChild(item);
+        };
+
+        ws.onerror = function(event) {
+            console.error("WebSocket error observed:", event);
+            const item = document.createElement('li');
+            item.style.color = 'red';
+            item.textContent = "An error occurred!";
+            document.getElementById('messages').appendChild(item);
+        };
+    </script>
+</body>
+</html>

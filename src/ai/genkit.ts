@@ -30,7 +30,7 @@ export const ai = genkit({
       }
     })
   ],
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-2.0-flash-exp', // อัพเกรดเป็น Gemini 2.0 Flash (ล่าสุด)
   defaults: {
     retry: {
       attempts: 3,  // จำนวนครั้งที่จะพยายามซ้ำเมื่อเกิดข้อผิดพลาด
@@ -58,7 +58,7 @@ export const procurementAI = genkit({
       }
     })
   ],
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-2.0-flash-exp', // อัพเกรดเป็น Gemini 2.0 Flash (ล่าสุด)
   defaults: {
     retry: {
       attempts: 5,  // เพิ่มจำนวนครั้งที่พยายามซ้ำเมื่อเกิดข้อผิดพลาด
@@ -90,7 +90,7 @@ export const marketAI = genkit({
       }
     })
   ],
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-2.0-flash-exp', // อัพเกรดเป็น Gemini 2.0 Flash (ล่าสุด)
   defaults: {
     retry: {
       attempts: 4,  // เพิ่มจำนวนครั้งที่พยายามซ้ำเมื่อเกิดข้อผิดพลาด

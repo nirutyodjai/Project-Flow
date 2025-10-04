@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview A forensic analysis flow to cross-reference TOR, Blueprints, and BOQ,
@@ -65,32 +65,32 @@ export const forensicDocumentCheckFlow = ai.defineFlow(
       **ข้อมูลที่คุณมี:**
 
       1.  **TOR (ข้อกำหนด):**
-          ```
+          \`\`\`
           ${input.torText.substring(0, 4000)}...
-          ```
+          \`\`\`
 
       2.  **BOQ (รายการวัสดุและราคา):**
-          ```
+          \`\`\`
           ${input.boqText.substring(0, 4000)}...
-          ```
+          \`\`\`
 
       3.  **ผลวิเคราะห์จากแบบแปลน (Blueprint Analysis):**
-          ```json
+          \`\`\`json
           ${JSON.stringify(input.blueprintAnalysis, null, 2)}
-          ```
+          \`\`\`
 
       4.  **ข้อมูลประวัติสเปควัสดุจาก TOR เก่าๆ (Historical TOR Material Specs):**
           ${input.historicalTorSpecs && input.historicalTorSpecs.length > 0 ? JSON.stringify(input.historicalTorSpecs, null, 2) : 'ไม่มีข้อมูลประวัติ'}
 
       **ขั้นตอนการตรวจสอบ:**
       สำหรับแต่ละรายการสำคัญใน BOQ และแบบแปลน:
-      1.  **เรียกใช้ Tool:** ใช้ `getMaterialAndSystemData` เพื่อค้นหาข้อมูลจริงของวัสดุนั้นๆ (ราคา, คุณสมบัติ, การใช้งาน, **ช่วงราคาตลาด, แหล่งที่มาทั่วไป**).
+      1.  **เรียกใช้ Tool:** ใช้ \`getMaterialAndSystemData\` เพื่อค้นหาข้อมูลจริงของวัสดุนั้นๆ (ราคา, คุณสมบัติ, การใช้งาน, **ช่วงราคาตลาด, แหล่งที่มาทั่วไป**).
       2.  **ตรวจสอบ 3 ทาง + ความเป็นจริง + ประวัติ:**
           - **BOQ vs. แบบแปลน:** ปริมาณและรายการใน BOQ ตรงกับที่เห็นในแบบหรือไม่?
           - **BOQ vs. TOR:** สเปควัสดุใน BOQ (เช่น ยี่ห้อ, รุ่น) ตรงตามที่ TOR กำหนดหรือไม่?
-          - **BOQ vs. ความเป็นจริง:** ราคาต่อหน่วยใน BOQ สมเหตุสมผลกับราคาตลาดที่ค้นเจอจาก `getMaterialAndSystemData` หรือไม่? หากไม่สมเหตุสมผล ให้ระบุ `Unreasonable Price`.
+          - **BOQ vs. ความเป็นจริง:** ราคาต่อหน่วยใน BOQ สมเหตุสมผลกับราคาตลาดที่ค้นเจอจาก \`getMaterialAndSystemData\` หรือไม่? หากไม่สมเหตุสมผล ให้ระบุ \`Unreasonable Price\`.
           - **แบบแปลน vs. ความเป็นจริง:** การนำวัสดุนี้ไปใช้ในตำแหน่งนั้นๆ ถูกต้องตามหลักการหรือไม่?
-          - **TOR/BOQ vs. ประวัติ:** สเปคที่ระบุใน TOR/BOQ มีรูปแบบที่ผิดปกติเมื่อเทียบกับประวัติหรือไม่? (เช่น ระบุยี่ห้อ/รุ่นที่เฉพาะเจาะจงเกินไป, สเปคที่สูงเกินความจำเป็นสำหรับงานนั้นๆ, หรือสเปคที่หน่วยงานนี้ไม่เคยใช้มาก่อน) หากพบ ให้ระบุเป็น `PotentialVendorLock` หรือ `UnusualSpecificationPattern` โดยพิจารณาจาก `commonSuppliers` ที่ได้จาก `getMaterialAndSystemData` ด้วย.
+          - **TOR/BOQ vs. ประวัติ:** สเปคที่ระบุใน TOR/BOQ มีรูปแบบที่ผิดปกติเมื่อเทียบกับประวัติหรือไม่? (เช่น ระบุยี่ห้อ/รุ่นที่เฉพาะเจาะจงเกินไป, สเปคที่สูงเกินความจำเป็นสำหรับงานนั้นๆ, หรือสเปคที่หน่วยงานนี้ไม่เคยใช้มาก่อน) หากพบ ให้ระบุเป็น \`PotentialVendorLock\` หรือ \`UnusualSpecificationPattern\` โดยพิจารณาจาก \`commonSuppliers\` ที่ได้จาก \`getMaterialAndSystemData\` ด้วย.
       3.  **สร้างรายงาน:** หากพบความขัดแย้ง ให้สร้างรายการใน "Discrepancy Report" โดยระบุรายละเอียด, ประเภท, ความรุนแรง, และข้อแนะนำให้ชัดเจน
 
       **เป้าหมายสุดท้าย:**
@@ -118,5 +118,4 @@ export const forensicDocumentCheckFlow = ai.defineFlow(
     return output;
   }
 );
-'''
-'''
+

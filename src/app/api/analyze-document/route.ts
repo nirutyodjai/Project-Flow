@@ -1,4 +1,4 @@
-'''// src/app/api/analyze-document/route.ts
+// src/app/api/analyze-document/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { summarizeDocumentFlow, DocumentSourceSchema } from '@/ai/flows/summarize-document-flow';
 import { z } from 'zod';
@@ -63,4 +63,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Failed to analyze document: ${errorMessage}` }, { status: 500 });
   }
 }
-'''

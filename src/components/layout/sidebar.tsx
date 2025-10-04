@@ -12,11 +12,11 @@ import {
   Briefcase,
   ChartNoAxesColumnIncreasing,
   BarChart3,
-  TrendingUp,
   Database,
   FileSpreadsheet,
-  Calculator,
   LineChart,
+  LayoutGrid,
+  Calendar as CalendarIcon,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -56,13 +56,38 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/projects')}>
+              <Link href="/projects"><Briefcase /><span>จัดการโครงการ</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/projects/kanban')}>
+              <Link href="/projects/kanban"><LayoutGrid /><span>Kanban Board</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/calendar')}>
+              <Link href="/calendar"><CalendarIcon /><span>ปฏิทินโครงการ</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/kpi-dashboard')}>
               <Link href="/kpi-dashboard"><BarChart3 /><span>KPI Dashboard</span></Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/notifications')}>
+              <Link href="/notifications"><BarChart3 /><span>การแจ้งเตือน</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/procurement')}>
-              <Link href="/procurement"><Briefcase /><span>ค้นหางานประมูล</span></Link>
+              <Link href="/procurement"><Database /><span>ค้นหางานประมูล AI</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/procurement/real-search')}>
+              <Link href="/procurement/real-search"><Database /><span>ค้นหางานจริง (Internet)</span></Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -86,18 +111,23 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/bidding-ai')}>
+              <Link href="/bidding-ai"><ChartNoAxesColumnIncreasing /><span>Smart Bidding AI</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/materials')}>
+              <Link href="/materials"><Database /><span>เปรียบเทียบราคาวัสดุ</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive('/quotations')}>
+              <Link href="/quotations"><FileSpreadsheet /><span>ใบเสนอราคา</span></Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={isActive('/finance')}>
               <Link href="/finance"><Wallet /><span>บริหารการเงิน</span></Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/market')}>
-              <Link href="/market"><TrendingUp /><span>วิเคราะห์ตลาดหุ้น</span></Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={isActive('/market/trends')}>
-              <Link href="/market/trends"><BarChart3 /><span>แนวโน้มตลาด</span></Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -116,25 +146,6 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-         <div className="px-3 py-2 mt-6">
-            <h2 className="mb-2 text-xs font-semibold uppercase text-slate-400 tracking-wider">
-                โครงการสำคัญ
-            </h2>
-            <div className="space-y-1 mt-2">
-                <a href="#" className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
-                    <span className="mr-2 h-2 w-2 rounded-full bg-green-400"></span>
-                    โครงการก่อสร้างอาคารสำนักงาน A
-                </a>
-                <a href="#" className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
-                    <span className="mr-2 h-2 w-2 rounded-full bg-yellow-400"></span>
-                    โครงการปรับปรุงระบบไฟฟ้า B
-                </a>
-                <a href="#" className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-700 hover:text-white">
-                    <span className="mr-2 h-2 w-2 rounded-full bg-red-400"></span>
-                    โครงการติดตั้งระบบปรับอากาศ C
-                </a>
-            </div>
-        </div>
       </SidebarContent>
       <SidebarFooter className="p-2">
         <SidebarSeparator className="my-2" />

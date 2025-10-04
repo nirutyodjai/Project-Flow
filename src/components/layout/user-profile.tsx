@@ -13,25 +13,29 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ChevronDown, LogIn, User as UserIcon, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { getFirebaseAuth } from '@/services/firebase';
 import { NotificationCenter } from '@/components/notification-center';
 import Image from 'next/image';
 
+// Mock User type (แทน Firebase User)
+interface MockUser {
+  email: string;
+  displayName: string;
+  photoURL?: string;
+}
+
 export function UserProfile() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<MockUser | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const auth = getFirebaseAuth();
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setUser(user);
-      });
-      return () => unsubscribe();
-    } else {
-        // If firebase is not configured, we can just assume no user is logged in.
-        setUser(null);
-    }
+    setMounted(true);
+    // Mock user data (แทน Firebase Auth)
+    const mockUser: MockUser = {
+      email: 'admin@example.com',
+      displayName: 'Admin User',
+      photoURL: undefined,
+    };
+    setUser(mockUser);
   }, []);
 
   if (!user) {

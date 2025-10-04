@@ -3,7 +3,7 @@
  * ไฟล์นี้รับผิดชอบการจัดเก็บและดึงข้อมูลการวิเคราะห์โครงการและตลาดหุ้นที่ AI ได้วิเคราะห์แล้ว
  * เพื่อใช้เป็นฐานข้อมูลในการวิเคราะห์ครั้งต่อไป
  */
-'use server';
+// ลบ 'use server' เพราะมี functions ที่ไม่ใช่ async
 
 import { getDb } from './firebase';
 import { doc, setDoc, getDoc, collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
@@ -24,7 +24,7 @@ export interface ProjectAnalysisData {
   recommendedBidPrice: string;
   queryKeywords: string[];
   analysisTimestamp: Date;
-  
+
   // ข้อมูลเพิ่มเติมที่ AI อาจวิเคราะห์
   competitorInfo?: {
     competitors: string[];
@@ -53,7 +53,7 @@ export async function saveProjectAnalysis(analysis: ProjectAnalysisData): Promis
 
     // สร้าง ID จากโครงการและเวลาวิเคราะห์
     const analysisId = `${analysis.projectId}_${new Date().getTime()}`;
-    
+
     // บันทึกข้อมูลลงใน collection 'projectAnalyses'
     await setDoc(doc(db, 'projectAnalyses', analysisId), analysisWithTimestamp);
     console.log(`Saved analysis for project ${analysis.projectName} with ID: ${analysisId}`);
@@ -83,7 +83,7 @@ export async function getLatestProjectAnalysis(projectId: string): Promise<Proje
     );
 
     const analysisSnapshot = await getDocs(q);
-    
+
     if (analysisSnapshot.empty) {
       console.log(`No analysis found for project ${projectId}`);
       return null;
@@ -112,39 +112,39 @@ export async function findRelatedAnalyses(keywords: string[], limit = 5): Promis
 
     const projectAnalysesCol = collection(db, 'projectAnalyses');
     const analysisSnapshot = await getDocs(projectAnalysesCol);
-    
+
     if (analysisSnapshot.empty) {
       return [];
     }
 
     // ดึงการวิเคราะห์ทั้งหมดและกรองตามคีย์เวิร์ด
     const allAnalyses = analysisSnapshot.docs.map(doc => doc.data() as ProjectAnalysisData);
-    
+
     // คำนวณคะแนนความเกี่ยวข้องกับคีย์เวิร์ดที่ให้มา
     const scoredAnalyses = allAnalyses.map(analysis => {
       // ตรวจสอบคีย์เวิร์ดที่ตรงกัน
-      const matchedKeywords = keywords.filter(keyword => 
+      const matchedKeywords = keywords.filter(keyword =>
         analysis.queryKeywords.some(k => k.includes(keyword) || keyword.includes(k))
       );
-      
+
       // คำนวณคะแนนความเกี่ยวข้อง
       const relevanceScore = matchedKeywords.length / keywords.length;
-      
+
       return {
         analysis,
         relevanceScore
       };
     });
-    
+
     // เรียงลำดับตามคะแนนความเกี่ยวข้องจากมากไปน้อย
     scoredAnalyses.sort((a, b) => b.relevanceScore - a.relevanceScore);
-    
+
     // ดึงเฉพาะการวิเคราะห์ที่มีคะแนนมากกว่า 0 และจำกัดจำนวนตามที่กำหนด
     const relatedAnalyses = scoredAnalyses
       .filter(item => item.relevanceScore > 0)
       .slice(0, limit)
       .map(item => item.analysis);
-    
+
     console.log(`Found ${relatedAnalyses.length} related analyses for keywords: ${keywords.join(', ')}`);
     return relatedAnalyses;
   } catch (error) {
@@ -171,27 +171,27 @@ export async function getProjectStatistics(projectType: string | null, organizat
 
     const projectAnalysesCol = collection(db, 'projectAnalyses');
     let q = query(projectAnalysesCol);
-    
+
     if (projectType) {
       q = query(q, where('projectType', '==', projectType));
     }
-    
+
     if (organizationType) {
       q = query(q, where('organizationType', '==', organizationType));
     }
 
     const analysisSnapshot = await getDocs(q);
-    
+
     if (analysisSnapshot.empty) {
       return { avgWinProbability: 50, avgEstimatedProfit: 15, sampleSize: 0 };
     }
 
     const analyses = analysisSnapshot.docs.map(doc => doc.data() as ProjectAnalysisData);
-    
+
     // คำนวณค่าเฉลี่ย
     const totalWinProb = analyses.reduce((sum, analysis) => sum + analysis.winProbability, 0);
     const totalProfit = analyses.reduce((sum, analysis) => sum + analysis.estimatedProfit, 0);
-    
+
     return {
       avgWinProbability: totalWinProb / analyses.length,
       avgEstimatedProfit: totalProfit / analyses.length,
@@ -267,7 +267,7 @@ export async function saveAnalysisData(
 
     const timestamp = new Date();
     const id = `${type}_${timestamp.getTime()}`;
-    
+
     let idField = '';
     switch (type) {
       case 'stock':
@@ -292,10 +292,10 @@ export async function saveAnalysisData(
     // บันทึกข้อมูลลงใน collection 'marketAnalyses'
     await setDoc(doc(db, 'marketAnalyses', analysisData.id), analysisData);
     console.log(`Saved ${type} analysis with ID: ${analysisData.id}`);
-    
+
     // บันทึกลงแคชท้องถิ่นด้วย
     saveAnalysisToLocalCache(type, data, keywords);
-    
+
     return true;
   } catch (error) {
     console.error(`Error saving ${type} analysis:`, error);
@@ -315,7 +315,7 @@ export function saveAnalysisToLocalCache(
   try {
     const timestamp = new Date();
     const id = `${type}_${timestamp.getTime()}`;
-    
+
     let idField = '';
     switch (type) {
       case 'stock':
@@ -378,7 +378,7 @@ export async function getAnalysisData(
     }
 
     const analysisSnapshot = await getDocs(q);
-    
+
     if (analysisSnapshot.empty) {
       console.log(`No ${type} analysis found with filter:`, filter);
       return findAnalysesInLocalCache(filter.keywords || [], type, limit);
@@ -388,7 +388,7 @@ export async function getAnalysisData(
     const results = analysisSnapshot.docs
       .map(doc => doc.data() as MarketAnalysisData)
       .slice(0, limit);
-    
+
     console.log(`Retrieved ${results.length} ${type} analyses with filter:`, filter);
     return results;
   } catch (error) {
@@ -408,7 +408,7 @@ export function findAnalysesInLocalCache(
   try {
     // รวมทุกรายการในแคชที่ตรงตามประเภท
     let allCacheEntries: MarketAnalysisData[] = [];
-    
+
     for (const entries of localMarketAnalysisCache.values()) {
       if (type) {
         allCacheEntries.push(...entries.filter(entry => entry.type === type));
@@ -416,22 +416,22 @@ export function findAnalysesInLocalCache(
         allCacheEntries.push(...entries);
       }
     }
-    
+
     // คำนวณความเกี่ยวข้องกับคีย์เวิร์ด
     const scoredEntries = allCacheEntries.map(entry => {
       const matchCount = keywords.reduce((count, keyword) => {
         const keywordLower = keyword.toLowerCase();
-        return count + (entry.keywords.some(k => 
+        return Number(count) + (entry.keywords.some(k =>
           k.toLowerCase().includes(keywordLower) || keywordLower.includes(k.toLowerCase())
         ) ? 1 : 0);
       }, 0);
-      
+
       return {
         entry,
         score: matchCount / keywords.length
       };
     });
-    
+
     // เรียงลำดับและกรอง
     return scoredEntries
       .filter(item => item.score > 0)
@@ -498,7 +498,7 @@ export async function saveStockAnalysis(analysisData: any): Promise<boolean> {
     analysisData.trend,
     ...(analysisData.keyFactors?.slice(0, 3) || [])
   ];
-  
+
   return await saveAnalysisData('stock', analysisData, keywords);
 }
 
@@ -512,7 +512,7 @@ export async function saveMarketAnalysis(analysisData: any): Promise<boolean> {
     analysisData.trend,
     ...(analysisData.sectorOutlook?.slice(0, 3).map((s: any) => s.sector) || [])
   ];
-  
+
   return await saveAnalysisData('market', analysisData, keywords);
 }
 
@@ -526,7 +526,7 @@ export async function saveNewsAnalysis(analysisData: any): Promise<boolean> {
     analysisData.marketImpact,
     ...(analysisData.affectedSectors || [])
   ];
-  
+
   return await saveAnalysisData('news', analysisData, keywords);
 }
 
@@ -562,13 +562,13 @@ export async function saveMarketTrendAnalysis(analysis: MarketTrendAnalysisData)
     }
     const docId = analysis.id || `${analysis.period}_${analysis.type}_${analysis.date}`;
     const docRef = doc(db, 'marketTrends', docId);
-    
+
     await setDoc(docRef, {
       ...analysis,
       id: docId,
       updatedAt: new Date().toISOString(),
     });
-    
+
     console.log(`Market trend analysis saved with ID: ${docId}`);
     return true;
   } catch (error) {
@@ -601,12 +601,12 @@ export async function getLatestMarketTrendAnalysis(
       orderBy('date', 'desc'),
       limit(1)
     );
-    
+
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) {
       return null;
     }
-    
+
     const doc = querySnapshot.docs[0];
     return { id: doc.id, ...doc.data() } as MarketTrendAnalysisData;
   } catch (error) {
@@ -637,7 +637,7 @@ export async function searchMarketTrendAnalysis(
       return [];
     }
     let q = query(collection(db, 'marketTrends'));
-    
+
     // Add filters if provided
     let conditions: any[] = [];
     if (period) {
@@ -652,13 +652,13 @@ export async function searchMarketTrendAnalysis(
     if (endDate) {
       conditions.push(where('date', '<=', endDate));
     }
-    
+
     if (conditions.length > 0) {
       q = query(collection(db, 'marketTrends'), ...conditions, orderBy('date', 'desc'));
     } else {
       q = query(collection(db, 'marketTrends'), orderBy('date', 'desc'));
     }
-    
+
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as MarketTrendAnalysisData));
   } catch (error) {
@@ -675,9 +675,9 @@ export async function searchMarketTrendAnalysis(
 
 /**
  * Schema for storing document analysis results in Firestore.
- * It extends the AI flow's output schema with database-specific fields.
+ * สร้าง schema ใหม่แทนการ extend เพราะ FinalAnalysisOutputSchema อาจไม่ใช่ pure Zod schema
  */
-export const DocumentAnalysisDBSchema = FinalAnalysisOutputSchema.extend({
+export const DocumentAnalysisDBSchema = z.object({
   id: z.string(),
   sourceType: z.enum(['url', 'text', 'file']),
   sourceContent: z.string().describe('URL, text snippet, or original file name'),
@@ -756,7 +756,8 @@ export type TorMaterialSpecification = z.infer<typeof MaterialSpecificationSchem
  */
 export async function saveTorMaterialSpecifications(
   torAnalysisId: string,
-  materials: TorMaterialSpecification[]
+  materials: TorMaterialSpecification[],
+  options?: { agencyName?: string; projectId?: string; documentId?: string }
 ): Promise<boolean> {
   try {
     const db = getDb();
@@ -765,16 +766,21 @@ export async function saveTorMaterialSpecifications(
       return false;
     }
 
-    const batch = [];
+    const batch = [] as Promise<any>[];
     const collectionRef = collection(db, 'torMaterialHistory');
 
     for (const material of materials) {
-      const docId = `${torAnalysisId}_${material.itemName.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 30)}_${Date.now()}`;
-      batch.push(setDoc(doc(collectionRef, docId), {
+      const safeName = material.itemName.replace(/[^a-zA-Z0-9-]/g, '_').substring(0, 30);
+      const docId = `${torAnalysisId}_${safeName}_${Date.now()}`;
+      const record = {
         torAnalysisId,
         ...material,
+        ...(options?.agencyName ? { agencyName: options.agencyName } : {}),
+        ...(options?.projectId ? { projectId: options.projectId } : {}),
+        ...(options?.documentId ? { documentId: options.documentId } : {}),
         createdAt: new Date().toISOString(),
-      }));
+      } as const;
+      batch.push(setDoc(doc(collectionRef, docId), record));
     }
 
     await Promise.all(batch);
@@ -797,7 +803,7 @@ export async function saveTorMaterialSpecifications(
 export async function getHistoricalTorMaterialSpecs(
   itemName: string,
   agencyName?: string,
-  limit: number = 10
+  maxResults: number = 10
 ): Promise<TorMaterialSpecification[]> {
   try {
     const db = getDb();
@@ -810,7 +816,7 @@ export async function getHistoricalTorMaterialSpecs(
       collection(db, 'torMaterialHistory'),
       where('itemName', '==', itemName),
       orderBy('createdAt', 'desc'),
-      limit(limit)
+      limit(maxResults)
     );
 
     // If agencyName is provided, filter by it (assuming we can link TORs to agencies)
@@ -823,6 +829,36 @@ export async function getHistoricalTorMaterialSpecs(
     return querySnapshot.docs.map(doc => doc.data() as TorMaterialSpecification);
   } catch (error) {
     console.error('Error getting historical TOR material specifications:', error);
+    return [];
+  }
+}
+
+/**
+ * Retrieves material specifications by torAnalysisId.
+ * Useful for linking TOR analysis outputs (from summarizeDocumentFlow) to UI.
+ */
+export async function getTorMaterialSpecsByAnalysisId(
+  torAnalysisId: string,
+  maxResults: number = 100
+): Promise<TorMaterialSpecification[]> {
+  try {
+    const db = getDb();
+    if (!db) {
+      console.warn('Firestore not initialized');
+      return [];
+    }
+
+    const q = query(
+      collection(db, 'torMaterialHistory'),
+      where('torAnalysisId', '==', torAnalysisId),
+      orderBy('createdAt', 'desc'),
+      limit(maxResults)
+    );
+
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data() as TorMaterialSpecification);
+  } catch (error) {
+    console.error('Error getting TOR material specs by analysis id:', error);
     return [];
   }
 }

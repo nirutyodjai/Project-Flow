@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview Tools for providing real-world construction knowledge.
@@ -86,4 +86,3 @@ export const getMaterialAndSystemData = ai.defineTool(
     return output;
   }
 );
-'''

@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview An AI flow for analyzing blueprint images (or PDF pages).
@@ -12,7 +12,7 @@ import { generate } from 'genkit/ai';
 
 export const BlueprintAnalysisInputSchema = z.object({
   blueprintImage: z.string().describe('A base64 encoded string of the blueprint image (PNG, JPEG, or a single PDF page).'),
-  mimeType: z.string().describe('The MIME type of the image, e.g., 'image/png' or 'application/pdf'.'),
+  mimeType: z.string().describe('The MIME type of the image, e.g., "image/png" or "application/pdf".'),
 });
 
 const MaterialTakeoffSchema = z.object({
@@ -23,7 +23,7 @@ const MaterialTakeoffSchema = z.object({
 });
 
 const VisualScopeSchema = z.object({
-  area: z.string().describe('พื้นที่หรือโซนของงาน เช่น 'ชั้น 1 โซน A', 'ห้องไฟฟ้า'.'),
+  area: z.string().describe('พื้นที่หรือโซนของงาน เช่น "ชั้น 1 โซน A", "ห้องไฟฟ้า"'),
   description: z.string().describe('คำอธิบายขอบเขตงานที่ระบุในพื้นที่นั้น'),
 });
 
@@ -106,4 +106,3 @@ export const analyzeBlueprintFlow = ai.defineFlow(
     return output;
   }
 );
-'''

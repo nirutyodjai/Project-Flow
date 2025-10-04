@@ -1,4 +1,4 @@
-'''// src/app/api/save-analysis/route.ts
+// src/app/api/save-analysis/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { saveDocumentAnalysis, DocumentAnalysisDBSchema } from '@/services/analysis-data';
 import { z } from 'zod';
@@ -52,4 +52,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Failed to save analysis: ${errorMessage}` }, { status: 500 });
   }
 }
-'''

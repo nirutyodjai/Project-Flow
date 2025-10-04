@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview A multi-step flow to analyze and summarize documents from various sources.
@@ -6,15 +6,20 @@
  */
 import { z } from 'zod';
 import { ai, procurementAI } from '@/ai/genkit';
-import { web_fetch } from 'genkit/tools';
+// ลบ web_fetch ที่ไม่มีใน genkit package
 import { saveTorMaterialSpecifications } from '@/services/analysis-data'; // Import the new save function
+
+// Optional runtime dependencies for file parsing (install to enable):
+// - pdf-parse (PDF)
+// - mammoth (DOCX)
+// - tesseract.js (image OCR)
 
 // == SCHEMAS ==
 
 export const DocumentSourceSchema = z.object({
   sourceType: z.enum(['url', 'text', 'file']).describe('ประเภทของแหล่งข้อมูล'),
   content: z.string().describe('เนื้อหาข้อมูล (URL, ข้อความ, หรือ base64 encoded file)'),
-  mimeType: z.string().optional().describe('MIME type ของไฟล์ (จำเป็นสำหรับ source 'file')'),
+  mimeType: z.string().optional().describe('MIME type ของไฟล์ สำหรับ source file'),
 });
 
 export const DocumentSummarySchema = z.object({
@@ -43,7 +48,68 @@ export const DetailedAnalysisSchema = z.object({
   extractedMaterialSpecifications: z.array(MaterialSpecificationSchema).optional().describe('รายการวัสดุและอุปกรณ์ที่สกัดจาก TOR พร้อมสเปค'),
 });
 
-export const FinalAnalysisOutputSchema = DocumentSummarySchema.merge(DetailedAnalysisSchema);
+export const FinalAnalysisOutputSchema = DocumentSummarySchema.merge(DetailedAnalysisSchema).extend({
+  torAnalysisId: z.string().optional().describe('รหัสการวิเคราะห์ TOR เพื่อเชื่อมโยงข้อมูลในภายหลัง'),
+});
+
+// == HELPERS ==
+
+/**
+ * Attempt to parse various file types (PDF, DOCX, images via OCR, plain text) from base64 to text.
+ * Uses optional dynamic imports; returns a clear error message if parser is unavailable.
+ */
+export async function parseFileToText(mimeType: string, base64: string): Promise<string> {
+  const buffer = Buffer.from(base64, 'base64');
+
+  // Plain text and common textual formats
+  if (mimeType.startsWith('text/') || ['application/json', 'application/xml', 'application/x-ndjson'].includes(mimeType)) {
+    return buffer.toString('utf-8');
+  }
+
+  // PDF parsing via pdf-parse (preferred) or fallback
+  if (mimeType === 'application/pdf') {
+    try {
+      const pdfParse = (await import('pdf-parse')).default as (data: Buffer) => Promise<{ text: string }>;
+      const result = await pdfParse(buffer);
+      return result.text || '';
+    } catch (e) {
+      // Fallback: indicate need to install dependency
+      throw new Error('PDF parsing requires pdf-parse. Please install it to enable PDF text extraction.');
+    }
+  }
+
+  // DOCX parsing via mammoth
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    try {
+      const mammoth = await import('mammoth');
+      const result = await (mammoth as any).extractRawText({ buffer });
+      return (result?.value as string) ?? '';
+    } catch (e) {
+      throw new Error('DOCX parsing requires mammoth. Please install it to enable DOCX text extraction.');
+    }
+  }
+
+  // Basic image OCR via tesseract.js for common image types
+  if ([
+    'image/png',
+    'image/jpeg',
+    'image/jpg',
+    'image/webp',
+    'image/bmp',
+    'image/tiff',
+  ].includes(mimeType)) {
+    try {
+      const Tesseract = await import('tesseract.js');
+      const { data } = await (Tesseract as any).recognize(buffer, 'eng');
+      return data?.text ?? '';
+    } catch (e) {
+      throw new Error('Image OCR requires tesseract.js. Please install it to enable OCR.');
+    }
+  }
+
+  // Unknown binary types
+  return '';
+}
 
 // == TOOLS ==
 
@@ -57,19 +123,35 @@ const extractTextFromSource = ai.defineTool(
   async (input) => {
     if (input.sourceType === 'url') {
       console.log(`Fetching content from URL: ${input.content}`);
-      const response = await web_fetch({ url: input.content });
-      return { extractedText: response.content };
+      try {
+        const response = await web_fetch({ url: input.content });
+        if (!response?.content || typeof response.content !== 'string') {
+          throw new Error('No content received from URL');
+        }
+        return { extractedText: response.content };
+      } catch (error: any) {
+        throw new Error(`Failed to fetch content from URL: ${error?.message ?? String(error)}`);
+      }
     }
     if (input.sourceType === 'text') {
       return { extractedText: input.content };
     }
-    if (input.sourceType === 'file' && input.mimeType) {
-      // In a real scenario, you would process the base64 content.
-      // For now, we'll assume it's text-based for simplicity.
-      const textContent = Buffer.from(input.content, 'base64').toString('utf-8');
-      return { extractedText: textContent };
+    if (input.sourceType === 'file') {
+      if (!input.mimeType) {
+        throw new Error('mimeType is required for file source');
+      }
+      try {
+        // Use smart parser for file types; provides clear error if parser not installed
+        const textContent = await parseFileToText(input.mimeType, input.content);
+        if (!textContent) {
+          throw new Error(`Unsupported or empty content for mimeType: ${input.mimeType}`);
+        }
+        return { extractedText: textContent };
+      } catch (error: any) {
+        throw new Error(`Failed to parse file input: ${error?.message ?? String(error)}`);
+      }
     }
-    throw new Error('Unsupported source type or missing mimeType for file.');
+    throw new Error('Unsupported source type.');
   }
 );
 
@@ -140,16 +222,20 @@ export const summarizeDocumentFlow = ai.defineFlow(
     const finalResult = {
       ...initialSummary,
       ...detailedAnalysis,
-    };
+    } as z.infer<typeof FinalAnalysisOutputSchema>;
 
-    // NEW: Save extracted material specifications to historical data
+    // Persist extracted material specifications (if any) and annotate torAnalysisId for downstream usage
     if (finalResult.extractedMaterialSpecifications && finalResult.extractedMaterialSpecifications.length > 0) {
-      // Generate a unique ID for this TOR analysis to link historical specs
       const torAnalysisId = `tor_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-      await saveTorMaterialSpecifications(torAnalysisId, finalResult.extractedMaterialSpecifications);
+      await saveTorMaterialSpecifications(
+        torAnalysisId,
+        finalResult.extractedMaterialSpecifications,
+        // In future we can pass more context (agencyName, projectId, documentId)
+        undefined
+      );
+      finalResult.torAnalysisId = torAnalysisId;
     }
 
     return finalResult;
   }
 );
-'''

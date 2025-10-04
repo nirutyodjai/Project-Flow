@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useEffect } from 'react';
 import {
   ArrowUp,
   Briefcase,
@@ -11,6 +12,12 @@ import {
   TrendingDown,
   Users,
   Bell,
+  FileText,
+  Search,
+  BarChart3,
+  Zap,
+  Calculator,
+  Sparkles,
 } from 'lucide-react';
 import { Area, AreaChart, CartesianGrid, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Legend, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,8 +26,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import React from 'react';
 import Link from 'next/link';
+import { FileUploader } from '@/components/file-uploader';
+import { AIAssistantWidget } from '@/components/ai-assistant-widget';
+import { QuickStatsWidget } from '@/components/quick-stats-widget';
+import { RecentActivityFeed } from '@/components/recent-activity-feed';
+import { QuickActions, FeatureShowcase } from '@/components/dashboard';
+import { initializeSampleData } from '@/lib/data-manager';
 
 
 const projectStatusData = [
@@ -58,6 +70,54 @@ const todoListData = [
     { id: 'task2', title: "ส่งรายงานความคืบหน้าประจำเดือน", priority: 'ปานกลาง', priorityColor: 'bg-yellow-900/30 text-yellow-200', time: "พรุ่งนี้ 17:00", checked: false, user: 'T', userBg: 'from-blue-500 to-blue-700' },
     { id: 'task3', title: "ตรวจสอบข้อผิดพลาดในระบบ C", priority: 'เสร็จสิ้น', priorityColor: 'bg-green-900/30 text-green-200', time: "เสร็จเมื่อ 2 ชั่วโมงที่แล้ว", checked: true, user: 'S', userBg: 'from-green-500 to-green-700' },
     { id: 'task4', title: "เตรียมเอกสารสำหรับการประมูลโครงการใหม่", priority: 'ต่ำ', priorityColor: 'bg-blue-900/30 text-blue-200', time: "30 ต.ค. 2023", checked: false, user: 'N', userBg: 'from-purple-500 to-purple-700' },
+]
+
+const quickActions = [
+    { 
+        title: 'วิเคราะห์เอกสาร', 
+        description: 'วิเคราะห์เอกสาร TOR ด้วย AI', 
+        icon: FileText, 
+        href: '/document-analyzer',
+        color: 'from-blue-500 to-blue-600',
+        bgColor: 'bg-blue-500/10',
+        iconColor: 'text-blue-500'
+    },
+    { 
+        title: 'ค้นหาโครงการ', 
+        description: 'ค้นหาโครงการประมูลที่เหมาะสม', 
+        icon: Search, 
+        href: '/automated-discovery',
+        color: 'from-purple-500 to-purple-600',
+        bgColor: 'bg-purple-500/10',
+        iconColor: 'text-purple-500'
+    },
+    { 
+        title: 'ที่ปรึกษาการประมูล', 
+        description: 'รับคำแนะนำการประมูลจาก AI', 
+        icon: Zap, 
+        href: '/bidding-advisor',
+        color: 'from-yellow-500 to-yellow-600',
+        bgColor: 'bg-yellow-500/10',
+        iconColor: 'text-yellow-500'
+    },
+    { 
+        title: 'รายงานขั้นสูง', 
+        description: 'ดูรายงานและวิเคราะห์ข้อมูล', 
+        icon: BarChart3, 
+        href: '/reports/advanced',
+        color: 'from-green-500 to-green-600',
+        bgColor: 'bg-green-500/10',
+        iconColor: 'text-green-500'
+    },
+    { 
+        title: 'คำนวณราคา', 
+        description: 'เปรียบเทียบราคาวัสดุก่อสร้าง', 
+        icon: Calculator, 
+        href: '/procurement/price-comparison',
+        color: 'from-orange-500 to-orange-600',
+        bgColor: 'bg-orange-500/10',
+        iconColor: 'text-orange-500'
+    },
 ]
 
 
@@ -100,6 +160,11 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 export default function DashboardPage() {
     const [todos, setTodos] = React.useState(todoListData);
 
+    // Initialize data on mount
+    useEffect(() => {
+        initializeSampleData();
+    }, []);
+
     const handleTodoChange = (id: string) => {
         setTodos(todos.map(todo => todo.id === id ? { ...todo, checked: !todo.checked } : todo));
     };
@@ -109,9 +174,12 @@ export default function DashboardPage() {
             <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-6 lg:p-8">
                 <div className="pb-5 border-b border-border flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h2 className="text-2xl font-headline font-bold leading-7">สวัสดี, ธนพล</h2>
+                        <h2 className="text-2xl font-headline font-bold leading-7 flex items-center gap-2">
+                            <Sparkles className="h-6 w-6 text-yellow-500 animate-pulse" />
+                            สวัสดี, ธนพล
+                        </h2>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            นี่คือภาพรวมของข้อมูลและกิจกรรมล่าสุดของคุณ
+                            ระบบพร้อมใช้งาน 🚀 ไม่ต้องใช้ Firebase! ข้อมูลปลอดภัยใน Local Storage
                         </p>
                     </div>
                     <div className="mt-4 md:mt-0 flex space-x-3">
@@ -122,7 +190,13 @@ export default function DashboardPage() {
                         </Button>
                     </div>
                 </div>
-                <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {/* Quick Stats Widget */}
+                <div className="mt-6">
+                    <QuickStatsWidget />
+                </div>
+
+                {/* Original Stats - Hidden, using new widget instead */}
+                <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 hidden">
                     <Card className="bg-card">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">รายได้รวม</CardTitle>
@@ -228,45 +302,19 @@ export default function DashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
+                {/* Feature Showcase */}
+                <div className="mt-8">
+                    <FeatureShowcase />
+                </div>
+
+                {/* Quick Actions */}
+                <div className="mt-8">
+                    <QuickActions />
+                </div>
+
                 <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-                    <Card className="bg-card rounded-lg shadow-lg border-border overflow-hidden">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle>กิจกรรมล่าสุด</CardTitle>
-                                <Button variant="link" className="text-primary">ดูทั้งหมด</Button>
-                            </div>
-                        </CardHeader>
-                        <CardContent>
-                           <div className="flow-root">
-                               <ul className="-mb-8">
-                                   {recentActivities.map((activity, activityIdx) => (
-                                       <li key={activityIdx}>
-                                           <div className="relative pb-8">
-                                               {activityIdx !== recentActivities.length - 1 ? (
-                                                   <span className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-border" aria-hidden="true" />
-                                               ) : null}
-                                               <div className="relative flex space-x-3">
-                                                   <div>
-                                                       <span className={cn('h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-card', activity.bgColor)}>
-                                                           <activity.icon className="h-5 w-5 text-white" />
-                                                       </span>
-                                                   </div>
-                                                   <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                                                       <div>
-                                                           <p className="text-sm" dangerouslySetInnerHTML={{ __html: activity.text.replace(/(<strong>.*?<\/strong>)/g, '<span class="font-medium text-foreground">$1</span>')}} />
-                                                       </div>
-                                                       <div className="text-right text-xs text-muted-foreground">
-                                                           <span>{activity.time}</span>
-                                                       </div>
-                                                   </div>
-                                               </div>
-                                           </div>
-                                       </li>
-                                   ))}
-                               </ul>
-                           </div>
-                        </CardContent>
-                    </Card>
+                    {/* Recent Activity Feed - New Widget */}
+                    <RecentActivityFeed />
                     <Card className="bg-card rounded-lg shadow-lg border-border overflow-hidden">
                         <CardHeader>
                             <div className="flex items-center justify-between">
@@ -306,6 +354,50 @@ export default function DashboardPage() {
                         </CardContent>
                     </Card>
                 </div>
+                <div className="mt-8">
+                    <Card className="bg-card rounded-lg shadow-lg border-border">
+                        <CardHeader>
+                            <CardTitle>Quick Actions - เข้าถึงฟีเจอร์ได้อย่างรวดเร็ว</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {quickActions.map((action, index) => (
+                                    <Link key={index} href={action.href}>
+                                        <Card className={cn(
+                                            "group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-105 border-2 hover:border-primary/50",
+                                            action.bgColor
+                                        )}>
+                                            <CardContent className="p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className={cn(
+                                                        "p-3 rounded-lg transition-transform group-hover:scale-110",
+                                                        action.bgColor
+                                                    )}>
+                                                        <action.icon className={cn("h-6 w-6", action.iconColor)} />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="font-semibold text-sm mb-1">{action.title}</h3>
+                                                        <p className="text-xs text-muted-foreground">{action.description}</p>
+                                                    </div>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </Link>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="mt-8">
+                    <Card className="bg-card rounded-lg shadow-lg border-border p-6">
+                        <CardTitle className="mb-4">อัพโหลดไฟล์</CardTitle>
+                        <FileUploader />
+                    </Card>
+                </div>
+
+                {/* AI Assistant Widget */}
+                <AIAssistantWidget />
             </main>
         </div>
     );

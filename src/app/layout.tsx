@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import { ThemeProvider } from "@/components/theme-provider";
 import { inter } from "@/lib/fonts";
@@ -7,6 +6,8 @@ import { AppLayout } from "@/components/layout/app-layout-client";
 import { Toaster } from "@/components/ui/toaster";
 import { PerformanceMonitor } from "@/components/performance-monitor";
 import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
+import { KeyboardShortcuts } from "@/components/keyboard-shortcuts";
+import { CommandPalette } from "@/components/command-palette";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -47,9 +48,10 @@ export default function RootLayout({
             {children}
           </AppLayout>
           <Toaster />
+          <KeyboardShortcuts />
+          <CommandPalette />
           {process.env.NODE_ENV === 'development' && (
             <>
-              {/* These components only load in development mode */}
               <PerformanceMonitor />
               <PWAInstallPrompt />
             </>

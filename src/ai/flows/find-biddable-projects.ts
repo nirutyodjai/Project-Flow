@@ -17,9 +17,7 @@ import {
   BiddableProjectSchema,
   FindBiddableProjectsInputSchema,
 } from './find-biddable-projects-shared';
-import { listProjects } from '@/services/firestore';
 import { z } from 'zod';
-import { searchAdvancedProjects } from '@/ai/procurement';
 import { 
   saveProjectAnalysis, 
   getLatestProjectAnalysis, 
@@ -28,6 +26,7 @@ import {
   saveProjectAnalysisToLocalCache, 
   ProjectAnalysisData 
 } from '@/services/analysis-data';
+import { DataManager } from '@/lib/data-manager';
 
 /**
  * ปรับปรุงคำค้นหาให้ฉลาดขึ้นโดยวิเคราะห์คำค้นหาและเพิ่มคีย์เวิร์ดที่เกี่ยวข้อง
@@ -300,7 +299,7 @@ const findBiddableProjectsFlow = ai.defineFlow(
   async (input) => {
     // ปรับปรุงคำค้นหาให้ฉลาดขึ้น
     const enhancedQuery = enhanceSearchQuery(input.query);
-    console.log(`[FIRESTORE MODE] Searching Firestore with enhanced query: "${enhancedQuery}"`);
+    console.log(`[LOCAL MODE] Searching local DataManager with enhanced query: "${enhancedQuery}"`);
     
     // สกัดคำสำคัญจากคำค้นหาเพื่อใช้ในการวิเคราะห์และเก็บข้อมูล
     const queryKeywords = extractKeywords(input.query);
@@ -316,15 +315,25 @@ const findBiddableProjectsFlow = ai.defineFlow(
       console.error('Error finding related analyses:', error);
     }
     
-    // Step 2: ค้นหาโครงการจาก Firestore ด้วยคำค้นหาที่ปรับปรุงแล้ว
-    const matchedProjects = await listProjects({ query: enhancedQuery });
+    // Step 2: ค้นหาโครงการจาก Local DataManager ด้วยคำค้นหาที่ปรับปรุงแล้ว
+    const allProjects = DataManager.getProjects();
+    const q = enhancedQuery.toLowerCase();
+    const matchedProjects = allProjects.filter((p) => {
+      const fields = [
+        p.name || '',
+        p.organization || '',
+        p.type || '',
+        p.address || '',
+      ].map((s) => s.toLowerCase());
+      return fields.some((f) => f.includes(q));
+    });
 
     if (!matchedProjects || matchedProjects.length === 0) {
-      console.log('[FIRESTORE MODE] No projects found in Firestore.');
+      console.log('[LOCAL MODE] No projects found in local storage.');
       return { projects: [], dataSource: 'DATABASE' as const };
     }
 
-    console.log(`[FIRESTORE MODE] Found ${matchedProjects.length} projects in Firestore.`);
+    console.log(`[LOCAL MODE] Found ${matchedProjects.length} projects in local storage.`);
 
     // Step 3: แปลงผลลัพธ์และเพิ่มการวิเคราะห์ที่ฉลาดขึ้น โดยใช้ข้อมูลการวิเคราะห์เดิม
     const projects = [];
@@ -360,7 +369,7 @@ const findBiddableProjectsFlow = ai.defineFlow(
           : "มีความเชี่ยวชาญที่ตรงกับความต้องการและเคยร่วมงานกับองค์กรที่คล้ายกัน";
       
       const projectData = {
-        // ข้อมูลพื้นฐานจาก Firestore
+        // ข้อมูลพื้นฐานจาก Local DataManager
         id: p.id, 
         name: p.name,
         organization: p.organization,
@@ -370,7 +379,7 @@ const findBiddableProjectsFlow = ai.defineFlow(
         contactPerson: p.contactPerson,
         phone: p.phone,
         documentUrl: p.documentUrl,
-        bidSubmissionDeadline: p.bidSubmissionDeadline,
+        bidSubmissionDeadline: p.bidSubmissionDeadline ?? null,
         
         // ข้อมูลการวิเคราะห์ที่ปรับปรุงแล้ว
         analysis,

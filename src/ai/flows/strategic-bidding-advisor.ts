@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview The ultimate bidding strategy synthesis flow.
@@ -40,14 +40,14 @@ export const BiddingStrategyInputSchema = z.object({
   blueprintSource: z.object({
     sourceType: z.enum(['file']), 
     content: z.string().describe('Base64 encoded blueprint image/pdf'),
-    mimeType: z.string().describe('e.g., 'image/png', 'application/pdf''),
+    mimeType: z.string().describe('e.g., image/png, application/pdf'),
   }).optional().describe('แหล่งข้อมูลแบบแปลน (ถ้ามี)'),
 
   // NEW: BOQ source
   boqSource: z.object({
       sourceType: z.enum(['file']), 
       content: z.string().describe('Base64 encoded BOQ file (e.g., text from a .txt or .csv)'),
-      mimeType: z.string().describe('e.g., 'text/plain', 'text/csv''),
+      mimeType: z.string().describe('e.g., text/plain, text/csv'),
   }).optional().describe('แหล่งข้อมูล BOQ (ถ้ามี)'),
 
   companyCapabilities: z.object({
@@ -212,4 +212,3 @@ export const strategicBiddingAdvisorFlow = ai.defineFlow(
     };
   }
 );
-'''

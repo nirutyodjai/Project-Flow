@@ -1,4 +1,4 @@
-''''use client';
+'use client';
 
 import { useState } from 'react';
 import { z } from 'zod';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, Search, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
@@ -196,4 +196,3 @@ export default function AutomatedDiscoveryPage() {
     </div>
   );
 }
-'''

@@ -1,4 +1,4 @@
-'''
+
 'use server';
 /**
  * @fileOverview A new, intelligent flow that automates project discovery and in-depth analysis.
@@ -95,4 +95,3 @@ export const automatedProjectDiscoveryFlow = ai.defineFlow(
     return { projects: analyzedProjects };
   }
 );
-'''

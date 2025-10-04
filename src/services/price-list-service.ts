@@ -1,4 +1,3 @@
-'use server';
 /**
  * @fileOverview บริการจัดการข้อมูลสินค้าและราคา สำหรับการคำนวณต้นทุน กำไร-ขาดทุน ในการจัดทำ BOQ
  */
@@ -597,7 +596,7 @@ export function calculateCostProfitBreakdown(
   const labourCostPercent = overrideParams?.labourCostPercent || 15; // ค่าแรงงาน 15% ของต้นทุนวัสดุ
   
   // คำนวณต้นทุนวัสดุ (ใช้ net price ถ้ามี หรือคำนวณจาก priceList และ discount)
-  const materialCost = item.netPrice || calculateNetPrice(item);
+  const materialCost = item.netPrice || calculateNetPrice(item.priceList || 0, item.discount || 0);
   
   // คำนวณค่าแรงงาน (ใช้ค่าที่ระบุไว้ถ้ามี หรือคำนวณเป็นเปอร์เซ็นต์จากต้นทุนวัสดุ)
   const labourCost = item.labour || (materialCost * (labourCostPercent / 100));

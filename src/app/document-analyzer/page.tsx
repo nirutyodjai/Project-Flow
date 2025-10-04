@@ -1,4 +1,4 @@
-''''use client';
+'use client';
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -11,10 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, FileDown, Link as LinkIcon, Save, UploadCloud } from 'lucide-react';
 
-// Type for the full response from our analysis API	ype AnalysisResponse = {
+// Type for the full response from our analysis API
+type AnalysisResponse = {
   analysis: z.infer<typeof FinalAnalysisOutputSchema>;
   source: {
     sourceType: 'url' | 'text' | 'file';
@@ -285,4 +286,3 @@ export default function DocumentAnalyzerPage() {
     </div>
   );
 }
-'''

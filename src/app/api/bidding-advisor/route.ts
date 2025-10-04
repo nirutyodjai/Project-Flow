@@ -1,4 +1,4 @@
-'''// src/app/api/bidding-advisor/route.ts
+// src/app/api/bidding-advisor/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { strategicBiddingAdvisorFlow, BiddingStrategyInputSchema } from '@/ai/flows/strategic-bidding-advisor';
 import { z } from 'zod';
@@ -73,4 +73,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Failed to get strategic advice: ${errorMessage}` }, { status: 500 });
   }
 }
-'''

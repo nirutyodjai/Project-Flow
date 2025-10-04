@@ -8,8 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Github, Bell, User } from 'lucide-react';
+import { Github, Bell, User, Database, Download } from 'lucide-react';
 import Image from 'next/image';
+import { DataExportImport } from '@/components/data-export-import';
+import { PerformanceWidget } from '@/components/performance-widget';
 
 export default function SettingsPage() {
   return (
@@ -106,6 +108,12 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Data Management */}
+        <DataExportImport />
+
+        {/* Performance */}
+        <PerformanceWidget />
       </main>
     </div>
   );

@@ -1,0 +1,236 @@
+// Prisma Schema for Procurement System
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+// โครงการประมูล
+model Project {
+  id              String   @id @default(cuid())
+  projectName     String
+  organization    String
+  budget          String
+  announcementDate String
+  closingDate     String
+  projectType     String
+  method          String
+  description     String   @db.Text
+  documentUrl     String?
+  sourceUrl       String?
+  contactPerson   String?
+  phone           String?
+  address         String?
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relations
+  estimates       AIEstimate[]
+  
+  @@index([closingDate])
+  @@index([organization])
+  @@index([budget])
+  @@map("projects")
+}
+
+// การประเมินด้วย AI
+model AIEstimate {
+  id                  String   @id @default(cuid())
+  projectId           String
+  winProbability      Float
+  estimatedProfit     Float
+  recommendedBidPrice String
+  discountPercent     Float
+  confidence          String
+  recommendation      String
+  reasons             String[]
+  risks               String[]
+  
+  // Metadata
+  createdAt           DateTime @default(now())
+  
+  // Relations
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  @@index([projectId])
+  @@map("ai_estimates")
+}
+
+// ผู้ใช้งาน (สำหรับอนาคต)
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  password    String
+  role        String   @default("user")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("users")
+}
+
+// บันทึกการค้นหา
+model SearchLog {
+  id          String   @id @default(cuid())
+  keyword     String
+  resultsCount Int
+  source      String   // 'database' | 'brave_search' | 'puppeteer'
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([keyword])
+  @@index([createdAt])
+  @@map("search_logs")
+}
+
+// การแจ้งเตือน
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  projectName String?
+  title       String
+  message     String   @db.Text
+  type        String   // 'new-project' | 'deadline-warning' | 'project-won' | etc.
+  priority    String   @default("medium") // 'low' | 'medium' | 'high' | 'urgent'
+  isRead      Boolean  @default(false)
+  amount      Float?
+  deadline    DateTime?
+  actionUrl   String?
+  actionLabel String?
+  metadata    Json?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// วัสดุ
+model Material {
+  id            String   @id @default(cuid())
+  name          String
+  category      String
+  brand         String?
+  model         String?
+  specification String?
+  unit          String
+  description   String?  @db.Text
+  imageUrl      String?
+  tags          String[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  prices        MaterialPrice[]
+  
+  @@index([category])
+  @@index([name])
+  @@map("materials")
+}
+
+// ราคาวัสดุ
+model MaterialPrice {
+  id                String   @id @default(cuid())
+  materialId        String
+  supplierId        String
+  supplierName      String
+  price             Float
+  unit              String
+  minOrder          Int?
+  maxOrder          Int?
+  discount          Float?
+  discountCondition String?
+  deliveryFee       Float?
+  deliveryTime      Int?
+  inStock           Boolean  @default(true)
+  stockQuantity     Int?
+  notes             String?  @db.Text
+  validUntil        DateTime?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  material          Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  
+  @@index([materialId])
+  @@index([supplierId])
+  @@index([price])
+  @@map("material_prices")
+}
+
+// ใบเสนอราคา
+model Quotation {
+  id                String   @id @default(cuid())
+  quotationNumber   String   @unique
+  userId            String
+  date              DateTime
+  validUntil        DateTime
+  
+  // Customer
+  customerName      String
+  customerAddress   String?
+  customerPhone     String?
+  customerEmail     String?
+  customerTaxId     String?
+  
+  // Pricing
+  subtotal          Float
+  discount          Float?
+  discountPercent   Float?
+  vat               Float?
+  vatPercent        Float?
+  total             Float
+  
+  // Terms
+  paymentTerms      String?  @db.Text
+  deliveryTerms     String?  @db.Text
+  warrantyTerms     String?  @db.Text
+  notes             String?  @db.Text
+  
+  // Status
+  status            String   @default("draft") // 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
+  
+  // Project reference
+  projectId         String?
+  projectName       String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  sentAt            DateTime?
+  
+  items             QuotationItem[]
+  
+  @@index([userId])
+  @@index([status])
+  @@index([quotationNumber])
+  @@map("quotations")
+}
+
+// รายการในใบเสนอราคา
+model QuotationItem {
+  id            String   @id @default(cuid())
+  quotationId   String
+  no            Int
+  description   String
+  quantity      Float
+  unit          String
+  unitPrice     Float
+  amount        Float
+  notes         String?
+  
+  quotation     Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  
+  @@index([quotationId])
+  @@map("quotation_items")
+}

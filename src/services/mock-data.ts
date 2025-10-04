@@ -11,7 +11,7 @@ export type Project = {
     contactPerson: string | null;
     phone: string | null;
     documentUrl: string | null;
-    bidSubmissionDeadline: string | null; // NEW: Added bidSubmissionDeadline
+    bidSubmissionDeadline?: string | null; // NEW: Added bidSubmissionDeadline
 };
 
 export type Contact = {
@@ -29,7 +29,10 @@ const mockProjects: Project[] = [
     { id: "proj-b", name: "โครงการปรับปรุงระบบไฟฟ้า B", organization: "การไฟฟ้านครหลวง", type: "ภาครัฐ", budget: "8,750,000", address: "456 ถนนเพลินจิต, กรุงเทพฯ", contactPerson: "คุณวิเชียร", phone: "082-345-6789", documentUrl: "#" },
     { id: "proj-c", name: "โครงการติดตั้งระบบปรับอากาศ C", organization: "โรงแรมแกรนด์ไฮแอท", type: "เอกชน", budget: "6,200,000", address: "789 ถนนสุขุมวิท, กรุงเทพฯ", contactPerson: "คุณมาลี", phone: "083-456-7890", documentUrl: "#" },
     { id: "proj-d", name: "โครงการก่อสร้างถนนทางหลวงสาย B", organization: "กรมทางหลวง", type: "ภาครัฐ", budget: "45,000,000", address: "อำเภอเมือง จังหวัดนครราชสีมา", contactPerson: "คุณสมหมาย", phone: "084-567-8901", documentUrl: "#" },
-    { id: "proj-e", name: "โครงการปรับปรุงระบบสาธารณูปโภคภายในมหาวิทยาลัย", organization: "มหาวิทยาลัยเกษตรศาสตร์", type: "ภาครัฐ", budget: "15,800,000", address: "50 ถนนงามวงศ์วาน จตุจักร กรุงเทพฯ", contactPerson: "คุณวิชัย", phone: "085-678-9012", documentUrl: "#" },
+    {
+        id: "proj-e", name: "โครงการปรับปรุงระบบสาธารณูปโภคภายในมหาวิทยาลัย", organization: "มหาวิทยาลัยเกษตรศาสตร์", type: "ภาครัฐ", budget: "15,800,000", address: "50 ถนนงามวงศ์วาน จตุจักร กรุงเทพฯ", contactPerson: "คุณวิชัย", phone: "085-678-9012", documentUrl: "#",
+        bidSubmissionDeadline: null
+    },
     { id: "proj-f", name: "โครงการก่อสร้างโรงงานผลิตชิ้นส่วนอิเล็กทรอนิกส์", organization: "บริษัท ไทยอิเล็กทรอนิกส์ จำกัด", type: "เอกชน", budget: "35,600,000", address: "นิคมอุตสาหกรรมอมตะซิตี้ ชลบุรี", contactPerson: "คุณสมชาย", phone: "086-789-0123", documentUrl: "#" },
     { id: "proj-g", name: "โครงการปรับปรุงระบบระบายน้ำ", organization: "กรุงเทพมหานคร", type: "ภาครัฐ", budget: "22,400,000", address: "เขตบางเขน กรุงเทพฯ", contactPerson: "คุณประเสริฐ", phone: "087-890-1234", documentUrl: "#" },
     { id: "proj-h", name: "โครงการก่อสร้างอาคารสำนักงานใหญ่", organization: "ธนาคารกรุงไทย", type: "เอกชน", budget: "78,500,000", address: "ถนนสุขุมวิท กรุงเทพฯ", contactPerson: "คุณวิภา", phone: "088-901-2345", documentUrl: "#" },

@@ -18,8 +18,8 @@ async function uploadToFirebase() {
       
       logger.info('Direct Firebase upload completed successfully', result.data, 'DirectUpload');
     } else {
-      console.error('❌ อัพโหลดไม่สำเร็จ:', result.error);
-      logger.error('Direct Firebase upload failed', result.error, 'DirectUpload');
+      console.error('❌ อัพโหลดไม่สำเร็จ:', result.message);
+      logger.error('Direct Firebase upload failed', result.message, 'DirectUpload');
     }
   } catch (error) {
     console.error('💥 เกิดข้อผิดพลาด:', error);
